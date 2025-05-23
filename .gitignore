@@ -11,3 +11,4 @@
 *.ipr
 *.class
 target/*
+/moon-dependencies/.flattened-pom.xml
