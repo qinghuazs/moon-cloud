@@ -14,6 +14,9 @@
     <packaging>pom</packaging>
     <name>moon-framework</name>
     <description>Moon Cloud 基础框架模块</description>
+    <modules>
+        <module>moon-spring-boot-starter-validator</module>
+    </modules>
 
 
 </project>
