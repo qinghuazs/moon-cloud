@@ -17,6 +17,7 @@
         <module>moon-dependencies</module>
         <module>moon-framework</module>
         <module>moon-ai</module>
+        <module>moon-java</module>
     </modules>
 
     <properties>
