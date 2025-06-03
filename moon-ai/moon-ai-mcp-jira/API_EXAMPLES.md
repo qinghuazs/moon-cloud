@@ -10,7 +10,19 @@
 
 ## 1. 健康检查
 
-检查服务是否正常运行。
+检查服务是否正常运行。<!-- Spring AI MCP Server Starter -->
+<dependency>
+    <groupId>org.springframework.ai</groupId>
+    <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+    <version>1.0.0</version>
+</dependency>
+
+<!-- MCP Java SDK -->
+<dependency>
+    <groupId>io.github.modelcontextprotocol</groupId>
+    <artifactId>mcp-java-sdk</artifactId>
+    <version>0.8.0</version>
+</dependency>
 
 ```bash
 curl -X GET "http://localhost:8080/jira-mcp/api/mcp/jira/health"
