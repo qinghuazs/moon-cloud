@@ -14,7 +14,7 @@
     <name>moon-ai</name>
     <description>Moon Cloud AI模块</description>
     <modules>
-        <module>moon-ai-mcp-jira</module>
+        <!-- <module>moon-ai-mcp-jira</module> -->
     </modules>
 
 

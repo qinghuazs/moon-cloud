@@ -1,11 +1,8 @@
 package com.moon.cloud.ai.mcp.jira.config;
 
-import java.util.Map;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.moon.cloud.ai.mcp.jira.service.JiraIssueService;
 
 @Configuration
 
