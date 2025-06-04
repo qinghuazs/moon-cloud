@@ -50,3 +50,6 @@ target/*
 *.vuserprefs.*
 *.vuserprefs.tmp
 *.vuserprefs.tmp.*
+.metals/metals.lock.db
+.metals/metals.mv.db
+.vscode/settings.json
