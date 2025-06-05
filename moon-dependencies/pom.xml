@@ -29,6 +29,7 @@
         <slf4j.version>2.0.9</slf4j.version>
         <logback.version>1.4.11</logback.version>
         <junit.version>5.10.0</junit.version>
+        <kafka.version>3.3.4</kafka.version>
     </properties>
 
     <dependencyManagement>
@@ -106,6 +107,11 @@
                 <artifactId>junit-jupiter</artifactId>
                 <version>${junit.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.kafka</groupId>
+                <artifactId>spring-kafka</artifactId>
+                <version>${kafka.version}</version>
             </dependency>
         </dependencies>
 

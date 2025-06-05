@@ -18,6 +18,7 @@
         <module>moon-framework</module>
         <module>moon-ai</module>
         <module>moon-java</module>
+        <module>moon-business</module>
     </modules>
 
     <properties>
