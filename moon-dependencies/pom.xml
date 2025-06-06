@@ -30,6 +30,7 @@
         <logback.version>1.4.11</logback.version>
         <junit.version>5.10.0</junit.version>
         <kafka.version>3.3.4</kafka.version>
+        <swagger.version>2.2.25</swagger.version>
     </properties>
 
     <dependencyManagement>
@@ -112,6 +113,11 @@
                 <groupId>org.springframework.kafka</groupId>
                 <artifactId>spring-kafka</artifactId>
                 <version>${kafka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${swagger.version}</version>
             </dependency>
         </dependencies>
 

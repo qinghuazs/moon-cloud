@@ -45,6 +45,11 @@ public class GpsDataConsumer {
         try {
             // 解析GPS消息
             GpsMessage gpsMessage = objectMapper.readValue(message, GpsMessage.class);
+
+            //更新redis缓存的最新GPS信息
+            //更新实时GPS信息
+            //更新历史GPS信息
+            //进行异步的告警判断：网点到达、驶离网点、路线偏离、驶出电子围栏等
             
             // 使用线程池异步处理GPS数据
             CompletableFuture.runAsync(() -> {

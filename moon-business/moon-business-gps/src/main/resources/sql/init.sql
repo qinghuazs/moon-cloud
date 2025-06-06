@@ -21,6 +21,21 @@ CREATE TABLE IF NOT EXISTS gps_data (
     INDEX idx_vehicle_gps_time (vehicle_id, gps_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='GPS数据表';
 
+CREATE TABLE IF NOT EXISTS gps_data_realtime (
+    id BIGINT PRIMARY KEY COMMENT '主键ID',
+    vehicle_id VARCHAR(50) NOT NULL COMMENT '车辆ID',
+    longitude DECIMAL(10, 7) NOT NULL COMMENT '经度',
+    latitude DECIMAL(10, 7) NOT NULL COMMENT '纬度',
+    speed DECIMAL(5, 2) DEFAULT 0.00 COMMENT '速度(km/h)',
+    direction DECIMAL(5, 2) DEFAULT 0.00 COMMENT '方向角(0-360度)',
+    altitude DECIMAL(8, 2) DEFAULT 0.00 COMMENT '海拔高度(米)',
+    gps_time DATETIME NOT NULL COMMENT 'GPS时间',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_vehicle_id (vehicle_id),
+    INDEX idx_gps_time (gps_time),
+    INDEX idx_vehicle_gps_time (vehicle_id, gps_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='GPS实时表';
+
 -- 创建GPS事件表（用于记录路线偏离、驶入驶出等事件）
 CREATE TABLE IF NOT EXISTS gps_event (
     id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',

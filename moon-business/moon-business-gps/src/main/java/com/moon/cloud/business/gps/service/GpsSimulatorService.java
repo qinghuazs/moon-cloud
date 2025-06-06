@@ -1,16 +1,21 @@
 package com.moon.cloud.business.gps.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.moon.cloud.business.gps.dto.GpsMessage;
+import com.moon.cloud.business.gps.entity.VehicleInfo;
+import com.moon.cloud.business.gps.mapper.VehicleInfoMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -24,13 +29,14 @@ import java.util.concurrent.ThreadLocalRandom;
 public class GpsSimulatorService {
     
     private static final String GPS_TOPIC = "gps-data";
-    private static final int VEHICLE_COUNT = 100; // 模拟100辆车
-    private static final Random random = new Random();
-    
+
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
     
     private final ObjectMapper objectMapper;
+
+    @Autowired
+    private VehicleInfoMapper vehicleInfoMapper;
     
     public GpsSimulatorService() {
         this.objectMapper = new ObjectMapper();
@@ -42,12 +48,15 @@ public class GpsSimulatorService {
      */
     @Scheduled(fixedRate = 5000)
     public void generateGpsData() {
-        for (int i = 1; i <= VEHICLE_COUNT; i++) {
-            String vehicleId = String.format("V%04d", i);
-            GpsMessage gpsMessage = generateRandomGpsMessage(vehicleId);
+        List<VehicleInfo> vehicleInfos = vehicleInfoMapper.selectByStatus(1);
+        if (CollectionUtils.isEmpty(vehicleInfos)) {
+            return;
+        }
+        for (VehicleInfo vehicleInfo : vehicleInfos) {
+            GpsMessage gpsMessage = generateRandomGpsMessage(vehicleInfo.getVehicleId());
             sendGpsMessage(gpsMessage);
         }
-        log.info("Generated GPS data for {} vehicles", VEHICLE_COUNT);
+        log.info("Generated GPS data for {} vehicles", vehicleInfos.size());
     }
     
     /**
