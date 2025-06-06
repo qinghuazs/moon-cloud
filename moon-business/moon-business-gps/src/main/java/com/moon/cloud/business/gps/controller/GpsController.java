@@ -24,10 +24,10 @@ public class GpsController {
     
     @Autowired
     private GpsSimulatorService gpsSimulatorService;
-    
     @Autowired
     private GpsDataMapper gpsDataMapper;
     
+
     /**
      * 手动触发GPS数据生成
      * 
@@ -79,8 +79,9 @@ public class GpsController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
         try {
-            List<GpsData> gpsDataList = gpsDataMapper.findByVehicleIdAndTimeRange(vehicleId, startTime, endTime);
-            return ResponseEntity.ok(gpsDataList);
+            //List<GpsData> gpsDataList = gpsDataMapper.findByVehicleIdAndTimeRange(vehicleId, startTime, endTime);
+            //return ResponseEntity.ok(gpsDataList);
+            return null;
         } catch (Exception e) {
             log.error("Failed to get GPS history for vehicle: {}", vehicleId, e);
             return ResponseEntity.internalServerError().build();

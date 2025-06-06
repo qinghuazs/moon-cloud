@@ -53,3 +53,7 @@ target/*
 .metals/metals.lock.db
 .metals/metals.mv.db
 .vscode/settings.json
+.idea/compiler.xml
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/jarRepositories.xml

@@ -19,9 +19,10 @@ import java.util.List;
 @Service
 public class GpsProcessingService {
     
+
     @Autowired
     private GpsDataMapper gpsDataMapper;
-    
+
     // 预定义的路线坐标点（示例：北京市内的一条路线）
     private static final double[][] ROUTE_POINTS = {
             {116.4074, 39.9042}, // 天安门
@@ -134,7 +135,6 @@ public class GpsProcessingService {
         
         // 获取车辆的上一个GPS数据
         GpsData lastGpsData = gpsDataMapper.findLatestByVehicleId(gpsMessage.getVehicleId());
-        
         if (lastGpsData != null) {
             boolean lastInArea = isInArea(lastGpsData.getLongitude(), lastGpsData.getLatitude());
             

@@ -1,9 +1,9 @@
 -- GPS数据库初始化脚本
 
 -- 创建数据库
-CREATE DATABASE IF NOT EXISTS moon_gps DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS moon DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE moon_gps;
+USE moon;
 
 -- 创建GPS数据表
 CREATE TABLE IF NOT EXISTS gps_data (
