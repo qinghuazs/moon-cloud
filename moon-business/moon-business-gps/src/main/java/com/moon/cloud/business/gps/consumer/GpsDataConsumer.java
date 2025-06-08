@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.moon.cloud.business.gps.dto.GpsMessage;
 import com.moon.cloud.business.gps.service.GpsProcessingService;
+import com.moon.cloud.threadpool.factory.MoonThreadPoolFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -32,7 +33,7 @@ public class GpsDataConsumer {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         // 创建线程池，用于异步处理GPS数据
-        this.threadPool = Executors.newFixedThreadPool(20);
+        this.threadPool = MoonThreadPoolFactory.createCPUIntensiveThreadPool("gps-data");
     }
     
     /**

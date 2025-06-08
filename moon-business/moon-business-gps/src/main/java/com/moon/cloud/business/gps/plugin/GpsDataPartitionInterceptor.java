@@ -202,7 +202,7 @@ public class GpsDataPartitionInterceptor implements Interceptor {
         builder.databaseId(ms.getDatabaseId());
         builder.lang(ms.getLang());
         builder.resultOrdered(ms.isResultOrdered());
-        builder.resultSets(ms.getResultSets());
+        //builder.resultSets(Arrays.toms.getResultSets());
         builder.resultMaps(ms.getResultMaps());
         builder.resultSetType(ms.getResultSetType());
         builder.flushCacheRequired(ms.isFlushCacheRequired());

@@ -1,5 +1,7 @@
 package com.moon.cloud.concurrent.threadpool;
 
+import com.moon.cloud.threadpool.factory.MoonThreadPoolFactory;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -32,7 +34,7 @@ public class DeadlockDemo {
      */
     private static void demonstrateDeadlock() {
         // 创建小容量线程池，容易触发死锁
-        ExecutorService executor = MoonThreadPool.createCustomThreadPool(
+        ExecutorService executor = MoonThreadPoolFactory.createCustomThreadPool(
             POOL_SIZE, POOL_SIZE, 60L, 10, "deadlock-demo"
         );
         
@@ -218,10 +220,10 @@ public class DeadlockDemo {
         System.out.println("\n=== 正确的做法：避免死锁 ===");
         
         // 使用两个不同的线程池：主任务池和子任务池
-        ExecutorService mainTaskPool = MoonThreadPool.createCustomThreadPool(
+        ExecutorService mainTaskPool = MoonThreadPoolFactory.createCustomThreadPool(
             2, 2, 60L, 10, "main-task"
         );
-        ExecutorService subTaskPool = MoonThreadPool.createCustomThreadPool(
+        ExecutorService subTaskPool = MoonThreadPoolFactory.createCustomThreadPool(
             4, 4, 60L, 20, "sub-task"
         );
         
@@ -246,8 +248,8 @@ public class DeadlockDemo {
             }
             
         } finally {
-            MoonThreadPool.shutdownGracefully(mainTaskPool, 10);
-            MoonThreadPool.shutdownGracefully(subTaskPool, 10);
+            MoonThreadPoolFactory.shutdownGracefully(mainTaskPool, 10);
+            MoonThreadPoolFactory.shutdownGracefully(subTaskPool, 10);
         }
     }
     

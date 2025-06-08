@@ -1,5 +1,7 @@
 package com.moon.cloud.concurrent.threadpool;
 
+import com.moon.cloud.threadpool.factory.MoonThreadPoolFactory;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
@@ -11,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * CPU密集型线程池性能对比演示
  * 测试不同线程数对CPU利用率、任务完成时间的影响
  */
-public class MoonThreadPoolDemo {
+public class MoonThreadPoolFactoryDemo {
     
     private static final int TASK_COUNT = 1000; // 总任务数
     private static final int CALCULATION_ITERATIONS = 1000000; // 每个任务的计算迭代次数
@@ -52,7 +54,7 @@ public class MoonThreadPoolDemo {
      */
     private static void performanceTest(int threadCount) throws InterruptedException {
         // 创建自定义线程池
-        ExecutorService executor = MoonThreadPool.createCustomThreadPool(
+        ExecutorService executor = MoonThreadPoolFactory.createCustomThreadPool(
             threadCount, threadCount, 60L, 1000, "perf-test"
         );
         
@@ -125,7 +127,7 @@ public class MoonThreadPoolDemo {
         }
         
         // 优雅关闭线程池
-        MoonThreadPool.shutdownGracefully(executor, 30);
+        MoonThreadPoolFactory.shutdownGracefully(executor, 30);
     }
     
     /**

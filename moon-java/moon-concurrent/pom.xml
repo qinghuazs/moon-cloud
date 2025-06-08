@@ -42,6 +42,12 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.moon.cloud.threadpool</groupId>
+            <artifactId>moon-spring-boot-starter-threadpool</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 
 </project>

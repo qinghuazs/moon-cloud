@@ -1,5 +1,7 @@
 package com.moon.cloud.concurrent.threadpool;
 
+import com.moon.cloud.threadpool.factory.MoonThreadPoolFactory;
+
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,7 +58,7 @@ public class DeadlockTestRunner {
      */
     private static void testMainSubTaskDeadlock(ThreadPoolDeadlockDetector detector) {
         // 创建小容量线程池
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) MoonThreadPool.createCustomThreadPool(
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) MoonThreadPoolFactory.createCustomThreadPool(
             2, 2, 60L, 5, "deadlock-test"
         );
         
@@ -108,7 +110,7 @@ public class DeadlockTestRunner {
      * 测试循环依赖任务死锁
      */
     private static void testCircularDependencyDeadlock(ThreadPoolDeadlockDetector detector) {
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) MoonThreadPool.createCustomThreadPool(
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) MoonThreadPoolFactory.createCustomThreadPool(
             3, 3, 60L, 10, "circular-deadlock"
         );
         
@@ -174,10 +176,10 @@ public class DeadlockTestRunner {
      */
     private static void testCorrectSolution(ThreadPoolDeadlockDetector detector) {
         // 使用分离的线程池
-        ThreadPoolExecutor mainTaskPool = (ThreadPoolExecutor) MoonThreadPool.createCustomThreadPool(
+        ThreadPoolExecutor mainTaskPool = (ThreadPoolExecutor) MoonThreadPoolFactory.createCustomThreadPool(
             2, 2, 60L, 10, "main-task"
         );
-        ThreadPoolExecutor subTaskPool = (ThreadPoolExecutor) MoonThreadPool.createCustomThreadPool(
+        ThreadPoolExecutor subTaskPool = (ThreadPoolExecutor) MoonThreadPoolFactory.createCustomThreadPool(
             4, 4, 60L, 20, "sub-task"
         );
         
@@ -213,8 +215,8 @@ public class DeadlockTestRunner {
             detector.printThreadPoolSummary();
             
         } finally {
-            MoonThreadPool.shutdownGracefully(mainTaskPool, 5);
-            MoonThreadPool.shutdownGracefully(subTaskPool, 5);
+            MoonThreadPoolFactory.shutdownGracefully(mainTaskPool, 5);
+            MoonThreadPoolFactory.shutdownGracefully(subTaskPool, 5);
         }
     }
     
@@ -315,7 +317,7 @@ public class DeadlockTestRunner {
         ThreadPoolDeadlockDetector detector = new ThreadPoolDeadlockDetector();
         detector.setDetectionInterval(500); // 500ms检测一次
         
-        ThreadPoolExecutor pool = (ThreadPoolExecutor) MoonThreadPool.createCustomThreadPool(
+        ThreadPoolExecutor pool = (ThreadPoolExecutor) MoonThreadPoolFactory.createCustomThreadPool(
             2, 2, 60L, 5, "monitor-demo"
         );
         
@@ -348,7 +350,7 @@ public class DeadlockTestRunner {
             Thread.currentThread().interrupt();
         } finally {
             detector.stopDetection();
-            MoonThreadPool.shutdownGracefully(pool, 5);
+            MoonThreadPoolFactory.shutdownGracefully(pool, 5);
         }
     }
 }

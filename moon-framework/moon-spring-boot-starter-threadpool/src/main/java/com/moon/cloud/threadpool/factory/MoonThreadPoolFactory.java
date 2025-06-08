@@ -1,11 +1,15 @@
 package com.moon.cloud.threadpool.factory;
 
+import com.moon.cloud.threadpool.registry.ThreadPoolRegistry;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 自定义线程池工厂类，支持创建IO密集型和CPU密集型线程池
  */
+@Slf4j
 public class MoonThreadPoolFactory {
 
     /**
@@ -20,16 +24,17 @@ public class MoonThreadPoolFactory {
         int corePoolSize = Runtime.getRuntime().availableProcessors() * 2;
         int maximumPoolSize = corePoolSize * 2;
         long keepAliveTime = 60L;
-        
-        return new ThreadPoolExecutor(
-            corePoolSize,
-            maximumPoolSize,
-            keepAliveTime,
-            TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(1000),
-            createThreadFactory(threadNamePrefix + "-io-"),
-            new ThreadPoolExecutor.CallerRunsPolicy()
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(1000),
+                createThreadFactory(threadNamePrefix + "-io-"),
+                new ThreadPoolExecutor.CallerRunsPolicy()
         );
+        ThreadPoolRegistry.register(threadNamePrefix, executor);
+        return executor;
     }
 
     /**
@@ -45,16 +50,17 @@ public class MoonThreadPoolFactory {
         int corePoolSize = Runtime.getRuntime().availableProcessors() + 1;
         int maximumPoolSize = corePoolSize;
         long keepAliveTime = 60L;
-        
-        return new ThreadPoolExecutor(
-            corePoolSize,
-            maximumPoolSize,
-            keepAliveTime,
-            TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(500),
-            createThreadFactory(threadNamePrefix + "-cpu-"),
-            new ThreadPoolExecutor.AbortPolicy()
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(500),
+                createThreadFactory(threadNamePrefix + "-cpu-"),
+                new ThreadPoolExecutor.AbortPolicy()
         );
+        ThreadPoolRegistry.register(threadNamePrefix, executor);
+        return executor;
     }
 
     /**
@@ -73,16 +79,17 @@ public class MoonThreadPoolFactory {
             long keepAliveTime,
             int queueCapacity,
             String threadNamePrefix) {
-        
-        return new ThreadPoolExecutor(
-            corePoolSize,
-            maximumPoolSize,
-            keepAliveTime,
-            TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(queueCapacity),
-            createThreadFactory(threadNamePrefix + "-custom-"),
-            new ThreadPoolExecutor.CallerRunsPolicy()
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(queueCapacity),
+                createThreadFactory(threadNamePrefix + "-custom-"),
+                new ThreadPoolExecutor.CallerRunsPolicy()
         );
+        ThreadPoolRegistry.register(threadNamePrefix, executor);
+        return executor;
     }
 
     /**
