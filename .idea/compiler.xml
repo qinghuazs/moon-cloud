@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="moon-spring-boot-starter-validator" />
         <module name="moon-concurrent" />
+        <module name="moon-spring-boot-starter-threadpool" />
       </profile>
       <profile name="Annotation profile for moon-cloud" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />

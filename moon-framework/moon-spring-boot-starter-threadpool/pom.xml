@@ -3,21 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.mooncloud</groupId>
-        <artifactId>moon-cloud</artifactId>
+        <artifactId>moon-framework</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>moon-framework</artifactId>
-    <packaging>pom</packaging>
-    <name>moon-framework</name>
-    <description>Moon Cloud 基础框架模块</description>
-    <modules>
-        <module>moon-spring-boot-starter-validator</module>
-        <module>moon-spring-boot-starter-threadpool</module>
-    </modules>
+    <groupId>com.moon.cloud.threadpool</groupId>
+    <artifactId>moon-spring-boot-starter-threadpool</artifactId>
+
 
 
 </project>

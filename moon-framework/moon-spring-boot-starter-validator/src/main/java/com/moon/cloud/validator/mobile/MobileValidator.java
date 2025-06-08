@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  */
 public class MobileValidator implements ConstraintValidator<Mobile, String> {
 
-    private static final Pattern PHONE_PATTERN = Pattern.compile(
+    private static final Pattern MOBILE_PATTERN = Pattern.compile(
         "^1[3-9]\\d{9}$"
     );
 
@@ -26,6 +26,6 @@ public class MobileValidator implements ConstraintValidator<Mobile, String> {
         if (StringUtils.isEmpty(value)) {
             return true;
         }
-        return PHONE_PATTERN.matcher(value).matches();
+        return MOBILE_PATTERN.matcher(value).matches();
     }
 }
