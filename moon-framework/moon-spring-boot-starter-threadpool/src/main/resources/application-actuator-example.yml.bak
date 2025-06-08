@@ -1,0 +1,144 @@
+# Moon Thread Pool Actuator Endpoint 配置示例
+# 将此配置添加到您的 application.yml 中
+
+management:
+  # Actuator 端点配置
+  endpoints:
+    web:
+      # 暴露的端点列表
+      exposure:
+        include: 
+          - threadpools    # 线程池监控端点
+          - health         # 健康检查
+          - info           # 应用信息
+          - metrics        # 指标信息
+          - prometheus     # Prometheus 指标（如果使用）
+      # Actuator 基础路径
+      base-path: /actuator
+      # 跨域配置（如果需要）
+      cors:
+        allowed-origins: "*"
+        allowed-methods: "GET,POST,DELETE"
+    # JMX 端点配置（可选）
+    jmx:
+      exposure:
+        include: threadpools
+  
+  # 具体端点配置
+  endpoint:
+    # 线程池端点配置
+    threadpools:
+      enabled: true              # 启用线程池端点
+      cache:
+        time-to-live: 10s        # 缓存时间
+    # 健康检查配置
+    health:
+      show-details: always       # 显示详细健康信息
+      show-components: always    # 显示组件信息
+    # 指标端点配置
+    metrics:
+      enabled: true
+  
+  # 管理服务器配置（可选：使用独立端口）
+  server:
+    port: 8081                   # 管理端口（与应用端口分离）
+    address: 127.0.0.1          # 只允许本地访问（生产环境推荐）
+  
+  # 安全配置（生产环境推荐）
+  security:
+    enabled: true                # 启用安全认证
+    roles: ADMIN                 # 需要的角色
+  
+  # 指标配置
+  metrics:
+    # 启用 JVM 指标
+    enable:
+      jvm: true
+      process: true
+      system: true
+    # Prometheus 配置（如果使用）
+    export:
+      prometheus:
+        enabled: true
+        step: 10s                # 指标收集间隔
+    # 指标标签
+    tags:
+      application: ${spring.application.name}
+      environment: ${spring.profiles.active:default}
+
+# 线程池配置示例
+moon:
+  threadpool:
+    pools:
+      # 异步任务线程池
+      async-pool:
+        core-pool-size: 5
+        maximum-pool-size: 10
+        keep-alive-time: 60
+        queue-capacity: 100
+        thread-name-prefix: "async-"
+        allow-core-thread-timeout: true
+      
+      # 定时任务线程池
+      scheduled-pool:
+        core-pool-size: 3
+        maximum-pool-size: 6
+        keep-alive-time: 30
+        queue-capacity: 50
+        thread-name-prefix: "scheduled-"
+        allow-core-thread-timeout: false
+
+# 日志配置
+logging:
+  level:
+    # 线程池相关日志
+    com.moon.cloud.threadpool: INFO
+    # Actuator 相关日志
+    org.springframework.boot.actuate: INFO
+    # 安全相关日志（如果启用安全）
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"             # 开发环境暴露所有端点
+  security:
+    enabled: false               # 开发环境关闭安全认证
+  server:
+    address: 0.0.0.0            # 开发环境允许外部访问
+
+---
+# 生产环境配置
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: threadpools,health,info,metrics  # 生产环境只暴露必要端点
+  security:
+    enabled: true                # 生产环境启用安全认证
+  server:
+    port: 8081                   # 使用独立管理端口
+    address: 127.0.0.1          # 只允许本地访问
+
+# 安全配置（生产环境）
+spring:
+  security:
+    user:
+      name: admin
+      password: ${ACTUATOR_PASSWORD:change-me}  # 从环境变量获取密码
+      roles: ADMIN
