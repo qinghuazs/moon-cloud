@@ -2,7 +2,6 @@ package com.moon.cloud.threadpool.endpoint;
 
 import com.moon.cloud.threadpool.endpoint.dto.ThreadPoolInfoDTO;
 import com.moon.cloud.threadpool.registry.ThreadPoolRegistry;
-import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.endpoint.annotation.*;
 import org.springframework.stereotype.Component;
@@ -89,7 +88,7 @@ public class MoonThreadPoolEndpoint {
      * @return
      */
     @ReadOperation
-    public Map<String, Object> threadPool(@Selector @Nullable String poolName) {
+    public Map<String, Object> threadPool(@Selector String poolName) {
         Map<String, Object> result = new HashMap<>();
         try {
             if (poolName == null) {
@@ -123,9 +122,9 @@ public class MoonThreadPoolEndpoint {
      */
     @WriteOperation
     public Map<String, Object> adjustThreadPool(
-            @Selector @Nullable  String poolName,
-            @Selector @Nullable  Integer corePoolSize,
-            @Selector @Nullable  Integer maximumPoolSize) {
+            @Selector String poolName,
+            @Selector Integer corePoolSize,
+            @Selector Integer maximumPoolSize) {
         Map<String, Object> result = new HashMap<>();
         // 动态调整线程池参数
         try {
@@ -180,7 +179,7 @@ public class MoonThreadPoolEndpoint {
      * @return
      */
     @DeleteOperation
-    public Map<String, Object> shutdownThreadPool(@Selector @Nullable String poolName) {
+    public Map<String, Object> shutdownThreadPool(@Selector String poolName) {
         Map<String, Object> result = new HashMap<>();
         try {
             if (poolName == null) {
