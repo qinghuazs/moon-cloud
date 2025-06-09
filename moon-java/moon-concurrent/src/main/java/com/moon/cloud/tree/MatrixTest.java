@@ -72,7 +72,7 @@ public class MatrixTest {
         System.out.println();
     }
 
-    private static void initializeMatrixData(Matrix matrix, int start) {
+    private static void initializeMatrixData(Matrix<Integer> matrix, int start) {
         System.out.println(String.format("=== 开始初始化矩阵数据，起始值 %s ===", start));
         for (int i = 0; i < matrix.getSize(); i++) {
             for (int j = 0; j < matrix.getSize(); j++) {
