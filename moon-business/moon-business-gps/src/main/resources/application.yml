@@ -1,17 +1,31 @@
 server:
-  port: 8080
+  port: 19121
 
 spring:
   application:
     name: moon-business-gps
+  jmx:
+    enabled: false
   
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/moon_gps?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: 123456
-    
+    url: jdbc:mysql://localhost:3306/moon?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: lemon
+    password: ningmeng
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle:10
+      maximum-pool-size:30
+      auto-commit:true
+      idle-timeout:30000
+      pool-name:HikariCP
+      max-lifetime:900000
+      connection-timeout:10000
+      connection-test-query:SELECT 1
+      validation-timeout:1000
+
+
   # Kafka配置
   kafka:
     bootstrap-servers: localhost:9092
@@ -27,6 +41,7 @@ spring:
       auto-offset-reset: latest
       enable-auto-commit: true
       auto-commit-interval: 1000
+
 
 # MyBatis Plus配置
 mybatis-plus:
@@ -47,3 +62,12 @@ logging:
     org.springframework.kafka: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: threadpools
+      base-path: /actuator
+
