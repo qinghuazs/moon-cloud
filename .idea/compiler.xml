@@ -24,7 +24,16 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="moon-ai" options="" />
+      <module name="moon-business" options="" />
+      <module name="moon-business-gps" options="" />
+      <module name="moon-cloud" options="" />
+      <module name="moon-concurrent" options="" />
+      <module name="moon-dependencies" options="" />
+      <module name="moon-framework" options="" />
+      <module name="moon-java" options="" />
       <module name="moon-spring-boot-starter-threadpool" options="-parameters -g" />
+      <module name="moon-spring-boot-starter-validator" options="" />
     </option>
   </component>
 </project>

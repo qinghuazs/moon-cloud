@@ -136,6 +136,11 @@
                 <artifactId>moon-spring-boot-starter-threadpool</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>com.mooncloud</groupId>
+                <artifactId>moon-spring-boot-starter-validator</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
         </dependencies>
 

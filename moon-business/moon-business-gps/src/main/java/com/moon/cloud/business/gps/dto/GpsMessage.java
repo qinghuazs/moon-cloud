@@ -1,5 +1,6 @@
 package com.moon.cloud.business.gps.dto;
 
+import com.moon.cloud.validator.nickname.ChineseNickname;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
