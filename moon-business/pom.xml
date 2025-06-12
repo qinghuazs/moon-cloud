@@ -16,6 +16,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>moon-business-gps</module>
+        <module>moon-business-leetcode</module>
     </modules>
 
 </project>

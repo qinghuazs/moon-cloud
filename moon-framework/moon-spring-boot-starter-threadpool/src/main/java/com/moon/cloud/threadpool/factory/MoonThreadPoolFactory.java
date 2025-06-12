@@ -1,6 +1,7 @@
 package com.moon.cloud.threadpool.factory;
 
 import com.moon.cloud.threadpool.registry.ThreadPoolRegistry;
+import com.moon.cloud.threadpool.rejector.RetryRejectedExecutionHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.*;
@@ -13,14 +14,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MoonThreadPoolFactory {
 
     /**
-     * 创建IO密集型线程池
+     * 创建IO密集型线程池（使用重试拒绝策略）
      * IO密集型任务特点：大量的网络请求、文件读写等，线程经常处于阻塞状态
      * 线程数配置：通常设置为 2 * CPU核心数，因为IO操作会阻塞线程
      * 
      * @param threadNamePrefix 线程名称前缀
+     * @param retryHandler 重试拒绝策略处理器
      * @return ExecutorService
      */
-    public static ExecutorService createIOIntensiveThreadPool(String threadNamePrefix) {
+    public static ExecutorService createIOIntensiveThreadPoolWithRetry(String threadNamePrefix, 
+                                                                       RetryRejectedExecutionHandler retryHandler) {
         int corePoolSize = Runtime.getRuntime().availableProcessors() * 2;
         int maximumPoolSize = corePoolSize * 2;
         long keepAliveTime = 60L;
@@ -31,21 +34,23 @@ public class MoonThreadPoolFactory {
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(1000),
                 createThreadFactory(threadNamePrefix + "-io-"),
-                new ThreadPoolExecutor.CallerRunsPolicy()
+                retryHandler != null ? retryHandler : new ThreadPoolExecutor.CallerRunsPolicy()
         );
         ThreadPoolRegistry.register(threadNamePrefix, executor);
         return executor;
     }
 
     /**
-     * 创建CPU密集型线程池
+     * 创建CPU密集型线程池（使用重试拒绝策略）
      * CPU密集型任务特点：大量的计算操作，线程持续占用CPU资源
      * 线程数配置：通常设置为 CPU核心数 + 1，避免过多线程导致上下文切换开销
      * 
      * @param threadNamePrefix 线程名称前缀
+     * @param retryHandler 重试拒绝策略处理器
      * @return ExecutorService
      */
-    public static ExecutorService createCPUIntensiveThreadPool(String threadNamePrefix) {
+    public static ExecutorService createCPUIntensiveThreadPoolWithRetry(String threadNamePrefix,
+                                                                        RetryRejectedExecutionHandler retryHandler) {
         //当某个线程因为页缺失（page fault）或其它短暂阻塞（如系统调用）时，额外的线程可以立即填补这个空档，保持CPU处于忙碌状态。
         int corePoolSize = Runtime.getRuntime().availableProcessors() + 1;
         int maximumPoolSize = corePoolSize;
@@ -57,28 +62,30 @@ public class MoonThreadPoolFactory {
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(500),
                 createThreadFactory(threadNamePrefix + "-cpu-"),
-                new ThreadPoolExecutor.AbortPolicy()
+                retryHandler != null ? retryHandler : new ThreadPoolExecutor.AbortPolicy()
         );
         ThreadPoolRegistry.register(threadNamePrefix, executor);
         return executor;
     }
 
     /**
-     * 创建自定义线程池
+     * 创建自定义线程池（使用重试拒绝策略）
      * 
      * @param corePoolSize 核心线程数
      * @param maximumPoolSize 最大线程数
      * @param keepAliveTime 线程空闲时间
      * @param queueCapacity 队列容量
      * @param threadNamePrefix 线程名称前缀
+     * @param retryHandler 重试拒绝策略处理器
      * @return ExecutorService
      */
-    public static ExecutorService createCustomThreadPool(
+    public static ExecutorService createCustomThreadPoolWithRetry(
             int corePoolSize,
             int maximumPoolSize,
             long keepAliveTime,
             int queueCapacity,
-            String threadNamePrefix) {
+            String threadNamePrefix,
+            RetryRejectedExecutionHandler retryHandler) {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
@@ -86,7 +93,7 @@ public class MoonThreadPoolFactory {
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(queueCapacity),
                 createThreadFactory(threadNamePrefix + "-custom-"),
-                new ThreadPoolExecutor.CallerRunsPolicy()
+                retryHandler != null ? retryHandler : new ThreadPoolExecutor.CallerRunsPolicy()
         );
         ThreadPoolRegistry.register(threadNamePrefix, executor);
         return executor;
