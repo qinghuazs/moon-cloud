@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="moon-business-leetcode" />
         <module name="moon-spring-boot-starter-validator" />
         <module name="moon-concurrent" />
         <module name="moon-spring-boot-starter-threadpool" />
@@ -27,6 +28,7 @@
       <module name="moon-ai" options="" />
       <module name="moon-business" options="" />
       <module name="moon-business-gps" options="" />
+      <module name="moon-business-leetcode" options="" />
       <module name="moon-cloud" options="" />
       <module name="moon-concurrent" options="" />
       <module name="moon-dependencies" options="" />
