@@ -108,11 +108,23 @@ public class MoonThreadPoolFactory {
     private static ThreadFactory createThreadFactory(String namePrefix) {
         return new ThreadFactory() {
             private final AtomicInteger threadNumber = new AtomicInteger(1);
-            
+            private final ThreadGroup group = Thread.currentThread().getThreadGroup();
+
+
             @Override
             public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r, namePrefix + threadNumber.getAndIncrement());
-                thread.setDaemon(false);
+                String threadName = namePrefix + "-thread-" + threadNumber.getAndIncrement();
+                Thread thread = new Thread(group, r, threadName, 0);
+
+                // 设置守护线程
+                thread.setDaemon(true);
+
+                // 设置异常处理器
+                thread.setUncaughtExceptionHandler((t, e) -> {
+                    System.err.println("Thread " + t.getName() + " threw exception: " + e.getMessage());
+                    e.printStackTrace();
+                });
+
                 return thread;
             }
         };
