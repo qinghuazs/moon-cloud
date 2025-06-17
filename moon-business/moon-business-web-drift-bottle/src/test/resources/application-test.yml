@@ -1,0 +1,58 @@
+# 测试环境配置
+server:
+  port: 0  # 随机端口
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  h2:
+    console:
+      enabled: false
+
+# Resilience4j配置（测试环境简化配置）
+resilience4j:
+  circuitbreaker:
+    instances:
+      driftBottleService:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        sliding-window-size: 5
+        minimum-number-of-calls: 3
+        
+  ratelimiter:
+    instances:
+      driftBottleService:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+
+# 漂流瓶配置
+drift-bottle:
+  max-pass-count: 10
+  random-pass-count: 5
+  expire-days: 30
+  max-content-length: 500
+  daily-throw-limit: 10
+  daily-pickup-limit: 20
+  daily-reply-limit: 15
+
+# 日志配置
+logging:
+  level:
+    com.moon.cloud.drift.bottle: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
