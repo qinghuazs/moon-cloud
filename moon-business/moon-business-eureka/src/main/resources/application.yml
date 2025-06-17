@@ -19,7 +19,7 @@ eureka:
     fetch-registry: false
     service-url:
       # 注册中心地址
-      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+      defaultZone: http://localhost:${server.port}/eureka/
   server:
     # 关闭自我保护机制（开发环境）
     enable-self-preservation: false

@@ -31,6 +31,7 @@
         <junit.version>5.10.0</junit.version>
         <kafka.version>3.3.4</kafka.version>
         <swagger.version>2.2.25</swagger.version>
+        <eureka.verison>4.1.2</eureka.verison>
     </properties>
 
     <dependencyManagement>
@@ -60,7 +61,12 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-                <version>4.1.2</version>
+                <version>${eureka.verison}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+                <version>${eureka.verison}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
