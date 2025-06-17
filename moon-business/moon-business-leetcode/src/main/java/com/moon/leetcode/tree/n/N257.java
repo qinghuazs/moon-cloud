@@ -14,6 +14,7 @@ public class N257 {
         if (root == null) {
             return new ArrayList<>();
         }
+        return new LinkedList<>(binaryTreePaths(root));
     }
 
     public void buildPath(TreeNode root, StringBuilder path) {
