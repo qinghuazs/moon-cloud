@@ -7,6 +7,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="moon-business-leetcode" />
+        <module name="moon-business-eureka" />
+        <module name="moon-business-eureka-client" />
         <module name="moon-spring-boot-starter-validator" />
         <module name="moon-concurrent" />
         <module name="moon-spring-boot-starter-threadpool" />
@@ -27,6 +29,8 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="moon-ai" options="" />
       <module name="moon-business" options="" />
+      <module name="moon-business-eureka" options="" />
+      <module name="moon-business-eureka-client" options="" />
       <module name="moon-business-gps" options="" />
       <module name="moon-business-leetcode" options="" />
       <module name="moon-cloud" options="" />

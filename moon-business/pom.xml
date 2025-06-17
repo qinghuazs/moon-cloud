@@ -17,6 +17,8 @@
     <modules>
         <module>moon-business-gps</module>
         <module>moon-business-leetcode</module>
+        <module>moon-business-eureka</module>
+        <module>moon-business-eureka-client</module>
     </modules>
 
 </project>
