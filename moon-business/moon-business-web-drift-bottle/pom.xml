@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.mooncloud</groupId>
+        <artifactId>moon-business</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <groupId>com.moon.cloud</groupId>
+    <artifactId>moon-business-web-drift-bottle</artifactId>
+
+    <description>
+        这是一个漂流瓶应用，我不知道自己能不能开发完，但是我还是希望尝试一下！
+        漂流瓶是一个小程序，参考原来的微信漂流瓶，可以向漂流瓶中写入一张纸条，然后丢入到海里，随机传给10个人。
+        收到漂流瓶的人，可以选择直接丢弃，或者回复，如果选择回复，则漂流瓶会重新回到发送漂流瓶的人手中！
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- Spring Boot Starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <!-- resilience4j 限流，降级，熔断 -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-all</artifactId>
+        </dependency>
+    </dependencies>
+
+
+</project>

@@ -54,8 +54,8 @@ public class MoonThreadPoolFactoryDemo {
      */
     private static void performanceTest(int threadCount) throws InterruptedException {
         // 创建自定义线程池
-        ExecutorService executor = MoonThreadPoolFactory.createCustomThreadPool(
-            threadCount, threadCount, 60L, 1000, "perf-test"
+        ExecutorService executor = MoonThreadPoolFactory.createCustomThreadPoolWithRetry(
+            threadCount, threadCount, 60L, 1000, "perf-test", null
         );
         
         // 获取线程管理Bean用于监控

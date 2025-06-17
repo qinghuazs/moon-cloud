@@ -11,8 +11,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/moon?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username:
-    password:
+    username: lemon
+    password: ningmeng
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       minimum-idle:10

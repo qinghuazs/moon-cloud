@@ -33,7 +33,7 @@ public class GpsDataConsumer {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         // 创建线程池，用于异步处理GPS数据
-        this.threadPool = MoonThreadPoolFactory.createCPUIntensiveThreadPool("gps-data");
+        this.threadPool = MoonThreadPoolFactory.createCPUIntensiveThreadPoolWithRetry("gps-data", null);
     }
     
     /**

@@ -34,8 +34,8 @@ public class DeadlockDemo {
      */
     private static void demonstrateDeadlock() {
         // 创建小容量线程池，容易触发死锁
-        ExecutorService executor = MoonThreadPoolFactory.createCustomThreadPool(
-            POOL_SIZE, POOL_SIZE, 60L, 10, "deadlock-demo"
+        ExecutorService executor = MoonThreadPoolFactory.createCustomThreadPoolWithRetry(
+            POOL_SIZE, POOL_SIZE, 60L, 10, "deadlock-demo", null
         );
         
         try {
@@ -220,11 +220,11 @@ public class DeadlockDemo {
         System.out.println("\n=== 正确的做法：避免死锁 ===");
         
         // 使用两个不同的线程池：主任务池和子任务池
-        ExecutorService mainTaskPool = MoonThreadPoolFactory.createCustomThreadPool(
-            2, 2, 60L, 10, "main-task"
+        ExecutorService mainTaskPool = MoonThreadPoolFactory.createCustomThreadPoolWithRetry(
+            2, 2, 60L, 10, "main-task", null
         );
-        ExecutorService subTaskPool = MoonThreadPoolFactory.createCustomThreadPool(
-            4, 4, 60L, 20, "sub-task"
+        ExecutorService subTaskPool = MoonThreadPoolFactory.createCustomThreadPoolWithRetry(
+            4, 4, 60L, 20, "sub-task", null
         );
         
         try {

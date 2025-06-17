@@ -32,6 +32,7 @@
         <kafka.version>3.3.4</kafka.version>
         <swagger.version>2.2.25</swagger.version>
         <eureka.verison>4.1.2</eureka.verison>
+        <resilience4j.version>1.7.1</resilience4j.version>
     </properties>
 
     <dependencyManagement>
@@ -68,6 +69,13 @@
                 <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
                 <version>${eureka.verison}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-all</artifactId>
+                <version>${resilience4j.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-configuration-processor</artifactId>
