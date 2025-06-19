@@ -1,0 +1,47 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka-server
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+  client:
+    # 是否向注册中心注册自己
+    register-with-eureka: false
+    # 是否从注册中心获取注册信息
+    fetch-registry: false
+    service-url:
+      # 注册中心地址
+      defaultZone: http://localhost:${server.port}/eureka/
+  server:
+    # 关闭自我保护机制（开发环境）
+    enable-self-preservation: false
+    # 清理间隔（单位毫秒，默认是60*1000）
+    eviction-interval-timer-in-ms: 10000
+    # 续约更新时间间隔（默认30秒）
+    renewal-percent-threshold: 0.85
+
+# 监控端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+# 日志配置
+logging:
+  level:
+    com.netflix.eureka: DEBUG
+    com.netflix.discovery: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"

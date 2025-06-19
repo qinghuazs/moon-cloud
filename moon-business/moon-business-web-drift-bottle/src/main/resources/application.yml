@@ -1,0 +1,174 @@
+# 漂流瓶应用配置
+server:
+  port: 8083
+  servlet:
+    context-path: /drift-bottle
+
+spring:
+  application:
+    name: moon-business-web-drift-bottle
+  
+  # 数据源配置 - 使用H2内存数据库
+  datasource:
+    url: jdbc:h2:mem:drift_bottle_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+    
+  # H2控制台配置
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+        
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    defer-datasource-initialization: true
+    
+  # SQL初始化
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+      
+  # Jackson配置
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+
+# Resilience4j配置
+resilience4j:
+  # 熔断器配置
+  circuitbreaker:
+    instances:
+      drift-bottle:
+        # 滑动窗口大小
+        sliding-window-size: 10
+        # 滑动窗口类型：COUNT_BASED（基于调用次数）或 TIME_BASED（基于时间）
+        sliding-window-type: COUNT_BASED
+        # 最小调用次数
+        minimum-number-of-calls: 5
+        # 失败率阈值（百分比）
+        failure-rate-threshold: 50
+        # 慢调用时间阈值（毫秒）
+        slow-call-duration-threshold: 2000
+        # 慢调用率阈值（百分比）
+        slow-call-rate-threshold: 50
+        # 熔断器开启状态持续时间（秒）
+        wait-duration-in-open-state: 30
+        # 半开状态下允许的调用次数
+        permitted-number-of-calls-in-half-open-state: 3
+        # 自动从开启状态转换到半开状态
+        automatic-transition-from-open-to-half-open-enabled: true
+        # 记录的异常类型
+        record-exceptions:
+          - java.lang.Exception
+        # 忽略的异常类型
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+          
+  # 限流器配置
+  ratelimiter:
+    instances:
+      drift-bottle:
+        # 限流周期（秒）
+        limit-refresh-period: 1
+        # 每个周期内允许的请求数
+        limit-for-period: 10
+        # 等待许可的超时时间（毫秒）
+        timeout-duration: 500
+        
+  # 重试配置
+  retry:
+    instances:
+      drift-bottle:
+        # 最大重试次数
+        max-attempts: 3
+        # 重试间隔（毫秒）
+        wait-duration: 1000
+        # 重试的异常类型
+        retry-exceptions:
+          - java.sql.SQLException
+          - org.springframework.dao.DataAccessException
+        # 不重试的异常类型
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+          
+  # 舱壁隔离配置
+  bulkhead:
+    instances:
+      drift-bottle:
+        # 最大并发调用数
+        max-concurrent-calls: 20
+        # 等待时间（毫秒）
+        max-wait-duration: 1000
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers,ratelimiters
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.9, 0.95, 0.99
+        
+# 日志配置
+logging:
+  level:
+    com.moon.cloud.drift.bottle: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/drift-bottle.log
+    max-size: 10MB
+    max-history: 30
+
+# 应用自定义配置
+drift-bottle:
+  # 漂流瓶配置
+  bottle:
+    # 最大传递次数
+    max-pass-count: 10
+    # 随机传递人数
+    random-recipients: 10
+    # 过期时间（天）
+    expire-days: 30
+  # 内容限制
+  content:
+    # 最大内容长度
+    max-length: 1000
+    # 最大回复长度
+    max-reply-length: 500
+  # 用户限制
+  user:
+    # 每日最大投放数量
+    daily-throw-limit: 10
+    # 每日最大捡取数量
+    daily-pickup-limit: 20
+    # 每日最大回复数量
+    daily-reply-limit: 30

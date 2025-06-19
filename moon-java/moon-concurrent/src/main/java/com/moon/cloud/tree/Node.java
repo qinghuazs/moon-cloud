@@ -6,17 +6,19 @@ public class Node<T> {
     private Node<T> left;
     private Node<T> right;
     private T data;
+    private boolean visited;
 
     public Node(T data) {
         this.data = data;
     }
 
-    public Node(Node<T> up, Node<T> down, Node<T> left, Node<T> right, T data) {
+    public Node(Node<T> up, Node<T> down, Node<T> left, Node<T> right, T data, boolean visited) {
         this.up = up;
         this.down = down;
         this.left = left;
         this.right = right;
         this.data = data;
+        this.visited = visited;
     }
 
     public Node<T> getUp() {
@@ -49,4 +51,6 @@ public class Node<T> {
     public void setData(T data) {
         this.data = data;
     }
+    public void setVisited(boolean visited) {this.visited = visited;}
+    public boolean isVisited() {return visited;}
 }

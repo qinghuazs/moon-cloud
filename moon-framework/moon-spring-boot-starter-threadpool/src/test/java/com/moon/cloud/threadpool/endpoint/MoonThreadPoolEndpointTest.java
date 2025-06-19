@@ -35,12 +35,13 @@ class MoonThreadPoolEndpointTest {
         endpoint = new MoonThreadPoolEndpoint();
         
         // 创建测试线程池
-        testPool = (ThreadPoolExecutor) MoonThreadPoolFactory.createCustomThreadPool(
+        testPool = (ThreadPoolExecutor) MoonThreadPoolFactory.createCustomThreadPoolWithRetry(
             2,
             4,
             60,
             10,
-            "test-pool"
+            "test-pool",
+                null
         );
     }
     
