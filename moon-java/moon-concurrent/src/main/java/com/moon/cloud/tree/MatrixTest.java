@@ -77,7 +77,10 @@ public class MatrixTest {
         for (int i = 0; i < matrix.getSize(); i++) {
             for (int j = 0; j < matrix.getSize(); j++) {
                 matrix.setData(i, j, start++);
+
             }
         }
     }
+
+
 }

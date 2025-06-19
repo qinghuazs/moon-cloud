@@ -159,7 +159,7 @@ GET /statistics?username=用户名
 - **COMPLETED**：已完成
 
 ### 漂流瓶实体
-```java
+```json
 {
   "id": 1,
   "senderUsername": "发送者用户名",
@@ -174,7 +174,7 @@ GET /statistics?username=用户名
 ```
 
 ### 回复实体
-```java
+```json
 {
   "id": 1,
   "replierUsername": "回复者用户名",

@@ -75,7 +75,8 @@ public class Matrix<T> {
      */
     public Node<T> getNode(int row, int col) {
         if (row < 0 || row >= size || col < 0 || col >= size) {
-            throw new IndexOutOfBoundsException("索引超出矩阵范围");
+            //throw new IndexOutOfBoundsException("索引超出矩阵范围");
+            return null;
         }
         return matrix[row][col];
     }
@@ -150,10 +151,67 @@ public class Matrix<T> {
     }
 
     /**
+     * 指定一个位置，从该位置为起点，遍历所有的节点，每个节点只能访问一次
+     * @param visitor 访问器接口
+     * @param row 行
+     * @param col 列
+     */
+    public void traverse(MatrixNodeVisitor<T> visitor,int row, int col) {
+        Node<T> root = getNode(row, col);
+        traverse(visitor, root);
+    }
+
+    /**
+     * 从一个节点开始遍历所有节点
+     * @param visitor 访问器接口
+     * @param root 起点
+     */
+    public void traverse(MatrixNodeVisitor<T> visitor,Node<T> root) {
+        if (root == null) {
+            return;
+        }
+        //被访问的不可再重复访问，如果已被访问过，则不再访问
+        boolean visited = root.isVisited();
+        if (!visited) {
+            root.setVisited(true);
+            visitor.visit(root);
+        } else {
+            return;
+        }
+
+        Node<T> up = root.getUp();
+        if (up != null) {
+            traverse(visitor, up);
+        }
+        Node<T> down = root.getDown();
+        if (down != null) {
+            traverse(visitor, down);
+        }
+        if (root.getLeft() != null) {
+            traverse(visitor, root.getLeft());
+        }
+        if (root.getRight() != null) {
+            traverse(visitor, root.getRight());
+        }
+    }
+
+
+
+    /**
      * 矩阵访问器接口
      * @param <T> 数据类型
      */
     public interface MatrixVisitor<T> {
         void visit(Node<T> node, int row, int col);
     }
+
+    /**
+     * 矩阵访问器接口
+     * @param <T> 数据类型
+     */
+    public interface MatrixNodeVisitor<T> {
+        void visit(Node<T> node);
+    }
+
+
 }
