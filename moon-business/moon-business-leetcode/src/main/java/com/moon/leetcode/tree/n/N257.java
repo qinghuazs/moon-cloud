@@ -11,26 +11,35 @@ import java.util.Queue;
 public class N257 {
 
     public List<String> binaryTreePaths(TreeNode root) {
-        if (root == null) {
-            return new ArrayList<>();
-        }
+        List<String> res = new ArrayList<>();
+        List<Integer> path = new ArrayList<>();
+        binaryTreePaths(root, path, res);
+        return res;
     }
 
-    public void buildPath(TreeNode root, StringBuilder path) {
-        if (root == null) {
-            return;
-        }
+    public void binaryTreePaths(TreeNode root, List<Integer> list, List<String> res) {
+        list.add(root.val);
         if (root.left == null && root.right == null) {
-            path.append("->").append(root.val);
+            for (int i=0; i<list.size(); i++) {
+                String str = "";
+                if (i == 0) {
+                    str = str + list.get(i);
+                } else {
+                    str = str + "->" + list.get(i);
+                }
+                res.add(str);
+            }
+            list.remove(list.size()-1);
             return;
         }
         if (root.left != null) {
-            buildPath(root.left, path.append("->").append(root.val));
+            list.add(root.left.val);
+            binaryTreePaths(root.left, list, res);
         }
         if (root.right != null) {
-            buildPath(root.right, path.append("->").append(root.val));
+            list.add(root.right.val);
+            binaryTreePaths(root.right, list, res);
         }
-
     }
 
 
