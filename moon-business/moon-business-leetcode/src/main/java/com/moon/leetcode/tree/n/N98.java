@@ -27,6 +27,7 @@ public class N98 {
         inOrder(root.left, nums);
         nums.add(root.val);
         inOrder(root.right, nums);
+        return true;
     }
 
 
