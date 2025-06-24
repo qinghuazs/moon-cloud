@@ -20,6 +20,7 @@
         <module>moon-business-eureka</module>
         <module>moon-business-eureka-client</module>
         <module>moon-business-web-drift-bottle</module>
+        <module>moon-business-gateway</module>
     </modules>
 
 </project>

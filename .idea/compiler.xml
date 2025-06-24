@@ -9,6 +9,7 @@
         <module name="moon-business-leetcode" />
         <module name="moon-business-eureka" />
         <module name="moon-business-web-drift-bottle" />
+        <module name="moon-business-gateway" />
         <module name="moon-spring-boot-starter-threadpool" />
         <module name="moon-business-eureka-client" />
         <module name="moon-spring-boot-starter-validator" />
@@ -19,7 +20,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="moon-business-gps" />
@@ -33,6 +33,7 @@
       <module name="moon-business" options="" />
       <module name="moon-business-eureka" options="" />
       <module name="moon-business-eureka-client" options="" />
+      <module name="moon-business-gateway" options="" />
       <module name="moon-business-gps" options="" />
       <module name="moon-business-leetcode" options="" />
       <module name="moon-business-web-drift-bottle" options="" />

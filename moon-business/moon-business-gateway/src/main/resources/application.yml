@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    gateway:
+      routes:
+        - id: drift-bottle
+          uri: http://localhost:8083/
+          predicates:
+            - Path=/drift-bottle/api/drift-bottle/**
+
+
+server:
+  port: 19121
