@@ -44,27 +44,14 @@ public class DriftBottleController {
     @PostMapping("/throw")
     @CircuitBreaker(name = "drift-bottle", fallbackMethod = "throwBottleFallback")
     @RateLimiter(name = "drift-bottle", fallbackMethod = "rateLimitFallback")
-    public ResponseEntity<Map<String, Object>> throwBottle(@Valid @RequestBody DriftBottleDTO bottleDTO) {
+    public ResponseEntity<MoonCloudResponse<DriftBottleDTO>> throwBottle(@Valid @RequestBody DriftBottleDTO bottleDTO) {
         try {
             logger.info("接收到投放漂流瓶请求: {}", bottleDTO);
-            
             DriftBottleDTO createdBottle = driftBottleService.createAndThrowBottle(bottleDTO);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "漂流瓶投放成功");
-            response.put("data", createdBottle);
-            
-            return ResponseEntity.ok(response);
-            
+            return ResponseEntity.ok(MoonCloudResponse.success("漂流瓶投放成功", createdBottle));
         } catch (Exception e) {
             logger.error("投放漂流瓶失败", e);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "投放漂流瓶失败: " + e.getMessage());
-            
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(MoonCloudResponse.error("投放漂流瓶失败: " + e.getMessage()));
         }
     }
 
