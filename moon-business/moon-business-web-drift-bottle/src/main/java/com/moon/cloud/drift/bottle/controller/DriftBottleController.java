@@ -347,79 +347,49 @@ public class DriftBottleController {
     /**
      * 捡漂流瓶熔断降级方法
      */
-    public ResponseEntity<Map<String, Object>> pickupBottleFallback(String username, Exception ex) {
+    public ResponseEntity<MoonCloudResponse> pickupBottleFallback(String username, Exception ex) {
         logger.warn("捡漂流瓶服务熔断，执行降级逻辑: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "服务暂时不可用，请稍后重试");
-        
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(MoonCloudResponse.error("服务暂时不可用，请稍后重试"));
     }
 
     /**
      * 丢弃漂流瓶熔断降级方法
      */
-    public ResponseEntity<Map<String, Object>> discardBottleFallback(Long bottleId, String username, Exception ex) {
+    public ResponseEntity<MoonCloudResponse> discardBottleFallback(Long bottleId, String username, Exception ex) {
         logger.warn("丢弃漂流瓶服务熔断，执行降级逻辑: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "服务暂时不可用，请稍后重试");
-        
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(MoonCloudResponse.error("服务暂时不可用，请稍后重试"));
     }
 
     /**
      * 回复漂流瓶熔断降级方法
      */
-    public ResponseEntity<Map<String, Object>> replyBottleFallback(BottleReplyDTO replyDTO, Exception ex) {
+    public ResponseEntity<MoonCloudResponse> replyBottleFallback(BottleReplyDTO replyDTO, Exception ex) {
         logger.warn("回复漂流瓶服务熔断，执行降级逻辑: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "服务暂时不可用，请稍后重试");
-        
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(MoonCloudResponse.error("服务暂时不可用，请稍后重试"));
     }
 
     /**
      * 获取发送列表熔断降级方法
      */
-    public ResponseEntity<Map<String, Object>> getSentBottlesFallback(String username, int page, int size, Exception ex) {
+    public ResponseEntity<MoonCloudResponse> getSentBottlesFallback(String username, int page, int size, Exception ex) {
         logger.warn("获取发送列表服务熔断，执行降级逻辑: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "服务暂时不可用，请稍后重试");
-        
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(MoonCloudResponse.error("服务暂时不可用，请稍后重试"));
     }
 
     /**
      * 获取接收列表熔断降级方法
      */
-    public ResponseEntity<Map<String, Object>> getReceivedBottlesFallback(String username, int page, int size, Exception ex) {
+    public ResponseEntity<MoonCloudResponse> getReceivedBottlesFallback(String username, int page, int size, Exception ex) {
         logger.warn("获取接收列表服务熔断，执行降级逻辑: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "服务暂时不可用，请稍后重试");
-        
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(MoonCloudResponse.error("服务暂时不可用，请稍后重试"));
     }
 
     /**
      * 获取漂流瓶详情熔断降级方法
      */
-    public ResponseEntity<Map<String, Object>> getBottleDetailFallback(Long bottleId, String username, Exception ex) {
+    public ResponseEntity<MoonCloudResponse> getBottleDetailFallback(Long bottleId, String username, Exception ex) {
         logger.warn("获取漂流瓶详情服务熔断，执行降级逻辑: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "服务暂时不可用，请稍后重试");
-        
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(MoonCloudResponse.error("服务暂时不可用，请稍后重试"));
     }
 
     /**
@@ -449,13 +419,8 @@ public class DriftBottleController {
     /**
      * 限流降级方法
      */
-    public ResponseEntity<Map<String, Object>> rateLimitFallback(Exception ex) {
+    public ResponseEntity<MoonCloudResponse> rateLimitFallback(Exception ex) {
         logger.warn("请求频率过高，触发限流: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "请求频率过高，请稍后重试");
-        
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(MoonCloudResponse.error("请求频率过高，请稍后重试"));
     }
 }
