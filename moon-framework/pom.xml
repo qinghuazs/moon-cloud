@@ -17,6 +17,7 @@
     <modules>
         <module>moon-spring-boot-starter-validator</module>
         <module>moon-spring-boot-starter-threadpool</module>
+        <module>moon-spring-boot-starter-response</module>
     </modules>
 
 

@@ -12,6 +12,7 @@
         <module name="moon-business-gateway" />
         <module name="moon-spring-boot-starter-threadpool" />
         <module name="moon-business-eureka-client" />
+        <module name="moon-spring-boot-starter-response" />
         <module name="moon-spring-boot-starter-validator" />
         <module name="moon-concurrent" />
       </profile>
@@ -42,6 +43,7 @@
       <module name="moon-dependencies" options="" />
       <module name="moon-framework" options="" />
       <module name="moon-java" options="" />
+      <module name="moon-spring-boot-starter-response" options="" />
       <module name="moon-spring-boot-starter-threadpool" options="-parameters -g" />
       <module name="moon-spring-boot-starter-validator" options="" />
     </option>

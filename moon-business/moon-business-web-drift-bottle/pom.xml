@@ -74,6 +74,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.moon.cloud</groupId>
+            <artifactId>moon-spring-boot-starter-response</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
     
     <build>

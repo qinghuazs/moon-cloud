@@ -160,6 +160,11 @@
                 <artifactId>moon-spring-boot-starter-validator</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>com.moon.cloud</groupId>
+                <artifactId>moon-spring-boot-starter-response</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
         </dependencies>
 

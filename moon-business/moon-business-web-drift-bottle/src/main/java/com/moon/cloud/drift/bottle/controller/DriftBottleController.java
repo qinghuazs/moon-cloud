@@ -3,6 +3,7 @@ package com.moon.cloud.drift.bottle.controller;
 import com.moon.cloud.drift.bottle.dto.BottleReplyDTO;
 import com.moon.cloud.drift.bottle.dto.DriftBottleDTO;
 import com.moon.cloud.drift.bottle.service.DriftBottleService;
+import com.moon.cloud.response.web.MoonCloudResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
@@ -290,26 +291,21 @@ public class DriftBottleController {
     @GetMapping("/replies/{bottleId}")
     @CircuitBreaker(name = "drift-bottle", fallbackMethod = "getBottleRepliesFallback")
     @RateLimiter(name = "drift-bottle", fallbackMethod = "rateLimitFallback")
-    public ResponseEntity<Map<String, Object>> getBottleReplies(
+    public ResponseEntity<MoonCloudResponse<Page<BottleReplyDTO>>> getBottleReplies(
             @PathVariable Long bottleId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         try {
             Page<BottleReplyDTO> replies = driftBottleService.getBottleReplies(bottleId, page, size);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "获取回复列表成功");
-            response.put("data", replies);
+
+            MoonCloudResponse<Page<BottleReplyDTO>> response = MoonCloudResponse.success("获取回复列表成功", replies);
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             logger.error("获取回复列表失败", e);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "获取回复列表失败: " + e.getMessage());
+
+            MoonCloudResponse<Page<BottleReplyDTO>> response = MoonCloudResponse.error("获取回复列表失败: " + e.getMessage());
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
@@ -442,12 +438,10 @@ public class DriftBottleController {
     /**
      * 获取回复列表熔断降级方法
      */
-    public ResponseEntity<Map<String, Object>> getBottleRepliesFallback(Long bottleId, int page, int size, Exception ex) {
+    public ResponseEntity<MoonCloudResponse<Page<BottleReplyDTO>>> getBottleRepliesFallback(Long bottleId, int page, int size, Exception ex) {
         logger.warn("获取回复列表服务熔断，执行降级逻辑: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "服务暂时不可用，请稍后重试");
+
+        MoonCloudResponse<Page<BottleReplyDTO>> response = MoonCloudResponse.error("服务暂时不可用，请稍后重试");
         
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
