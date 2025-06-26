@@ -12,8 +12,8 @@ import java.util.Map;
  * 漂流瓶测试控制器
  * 提供测试接口来演示Resilience4j动态配置的效果
  */
-@RestController
-@RequestMapping("/api/drift-bottle/test")
+//@RestController
+//@RequestMapping("/api/drift-bottle/test")
 public class DriftBottleTestController {
 
     private final DriftBottleResilienceService resilienceService;

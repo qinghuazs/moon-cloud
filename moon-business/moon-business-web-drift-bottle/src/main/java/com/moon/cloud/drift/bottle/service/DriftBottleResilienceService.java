@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  * 漂流瓶弹性服务
  * 演示如何在业务代码中使用动态配置的Resilience4j组件
  */
-@Service
+//@Service
 public class DriftBottleResilienceService {
 
     private static final Logger logger = LoggerFactory.getLogger(DriftBottleResilienceService.class);

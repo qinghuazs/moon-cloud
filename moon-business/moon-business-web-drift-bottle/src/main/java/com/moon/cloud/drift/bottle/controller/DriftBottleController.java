@@ -25,6 +25,7 @@ import java.util.Map;
  * @author Moon Cloud
  * @since 1.0.0
  */
+
 @RestController
 @RequestMapping("/api/drift-bottle")
 @CrossOrigin(origins = "*")
@@ -43,7 +44,7 @@ public class DriftBottleController {
      */
     @PostMapping("/throw")
     @CircuitBreaker(name = "drift-bottle", fallbackMethod = "throwBottleFallback")
-    @RateLimiter(name = "drift-bottle", fallbackMethod = "rateLimitFallback")
+    @RateLimiter(name = "drift-bottle", fallbackMethod = "rateLimitFallbackForThrow")
     public ResponseEntity<MoonCloudResponse<DriftBottleDTO>> throwBottle(@Valid @RequestBody DriftBottleDTO bottleDTO) {
         try {
             logger.info("接收到投放漂流瓶请求: {}", bottleDTO);
@@ -421,6 +422,11 @@ public class DriftBottleController {
      */
     public ResponseEntity<MoonCloudResponse> rateLimitFallback(Exception ex) {
         logger.warn("请求频率过高，触发限流: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(MoonCloudResponse.error("请求频率过高，请稍后重试"));
+    }
+
+    public ResponseEntity<MoonCloudResponse<DriftBottleDTO>> rateLimitFallbackForThrow(@Valid @RequestBody DriftBottleDTO bottleDTO, Exception ex) {
+        logger.warn("投放漂流瓶请求频率过高，触发限流: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(MoonCloudResponse.error("请求频率过高，请稍后重试"));
     }
 }

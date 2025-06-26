@@ -83,9 +83,9 @@ resilience4j:
     instances:
       drift-bottle:
         # 限流周期（秒）
-        limit-refresh-period: 1
+        limit-refresh-period: 10
         # 每个周期内允许的请求数
-        limit-for-period: 10
+        limit-for-period: 1
         # 等待许可的超时时间（毫秒）
         timeout-duration: 500
         

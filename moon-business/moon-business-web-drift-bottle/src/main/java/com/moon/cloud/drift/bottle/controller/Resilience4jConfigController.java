@@ -12,8 +12,8 @@ import java.util.Map;
  * Resilience4j 配置管理控制器
  * 提供动态调整熔断器、限流器、重试等配置的REST API
  */
-@RestController
-@RequestMapping("/api/resilience4j")
+//@RestController
+//@RequestMapping("/api/resilience4j")
 public class Resilience4jConfigController {
 
     private final Resilience4jConfigManager configManager;

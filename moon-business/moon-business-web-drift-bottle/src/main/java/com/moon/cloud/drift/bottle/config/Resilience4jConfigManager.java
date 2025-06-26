@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
  * Resilience4j 配置管理器
  * 负责动态创建和更新熔断器、限流器、重试等实例
  */
-@Component
+//@Component
 public class Resilience4jConfigManager {
 
     private static final Logger logger = LoggerFactory.getLogger(Resilience4jConfigManager.class);
