@@ -116,7 +116,7 @@ public class DriftBottleResilienceService {
         Retry retry = configManager.getOrCreateRetry("drift-bottle");
         
         // 组合装饰器：重试 -> 熔断器 -> 限流器
-        Supplier<String> decoratedSupplier = Supplier.of(() -> {
+        Supplier<String> decoratedSupplier = () -> {
             logger.info("执行组合保护操作: {}", operation);
             
             // 模拟复杂的业务逻辑
@@ -132,7 +132,7 @@ public class DriftBottleResilienceService {
             }
             
             return "组合保护操作成功: " + operation;
-        });
+        };
         
         // 应用装饰器链
         decoratedSupplier = RateLimiter.decorateSupplier(rateLimiter, decoratedSupplier);
