@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们 - Moon Cloud 短链</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.1) !important;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+        }
+        .nav-link:hover {
+            color: white !important;
+        }
+        .main-content {
+            padding-top: 100px;
+            padding-bottom: 50px;
+        }
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+            margin-bottom: 30px;
+        }
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin: 0 auto 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-link-45deg"></i> Moon Cloud 短链
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">首页</a>
+                <a class="nav-link active" href="/about">关于</a>
+                <a class="nav-link" href="/help">帮助</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="main-content">
+        <div class="container">
+            <!-- 标题 -->
+            <div class="text-center text-white mb-5">
+                <h1 class="display-4 fw-bold">关于 Moon Cloud 短链</h1>
+                <p class="lead">专业、安全、高效的短链接服务</p>
+            </div>
+
+            <!-- 产品介绍 -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body p-5">
+                            <h2 class="h3 mb-4 text-center">产品介绍</h2>
+                            <p class="lead text-muted">
+                                Moon Cloud 短链是一个专业的短链接生成和管理服务，致力于为用户提供简单、安全、高效的链接缩短解决方案。
+                            </p>
+                            <p>
+                                我们的服务基于先进的分布式架构设计，采用高性能的缓存技术和智能的负载均衡策略，
+                                确保每一个短链接都能快速、稳定地为用户提供服务。
+                            </p>
+                            <p>
+                                无论您是个人用户还是企业客户，Moon Cloud 短链都能满足您的需求，
+                                帮助您更好地管理和分享链接，提升工作效率。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 核心特性 -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h2 class="h3 text-center text-white mb-5">核心特性</h2>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon">
+                                <i class="bi bi-lightning-charge"></i>
+                            </div>
+                            <h5 class="card-title">高性能</h5>
+                            <p class="card-text">
+                                采用Redis缓存和布隆过滤器技术，确保毫秒级响应速度，
+                                支持高并发访问。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <h5 class="card-title">安全可靠</h5>
+                            <p class="card-text">
+                                多重安全防护机制，防止恶意链接和滥用，
+                                保护用户数据安全。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                            <h5 class="card-title">数据分析</h5>
+                            <p class="card-text">
+                                详细的访问统计和分析报告，
+                                帮助您了解链接的使用情况。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技术架构 -->
+            <div class="row mt-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body p-5">
+                            <h2 class="h3 mb-4 text-center">技术架构</h2>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="bi bi-gear text-primary"></i> 后端技术</h6>
+                                    <ul class="list-unstyled">
+                                        <li>• Spring Boot 框架</li>
+                                        <li>• Spring Data JPA</li>
+                                        <li>• Redis 缓存</li>
+                                        <li>• MySQL 数据库</li>
+                                        <li>• Snowflake ID 生成器</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="bi bi-palette text-primary"></i> 前端技术</h6>
+                                    <ul class="list-unstyled">
+                                        <li>• Bootstrap 5</li>
+                                        <li>• Thymeleaf 模板</li>
+                                        <li>• 响应式设计</li>
+                                        <li>• 现代化UI</li>
+                                        <li>• 渐进式增强</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 联系我们 -->
+            <div class="row mt-5">
+                <div class="col-lg-6 mx-auto">
+                    <div class="card">
+                        <div class="card-body p-5 text-center">
+                            <h2 class="h3 mb-4">联系我们</h2>
+                            <p class="text-muted mb-4">
+                                如果您有任何问题或建议，欢迎随时联系我们。
+                            </p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p>
+                                        <i class="bi bi-envelope text-primary"></i><br>
+                                        <strong>邮箱</strong><br>
+                                        <small>support@mooncloud.com</small>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p>
+                                        <i class="bi bi-github text-primary"></i><br>
+                                        <strong>GitHub</strong><br>
+                                        <small>github.com/mooncloud</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

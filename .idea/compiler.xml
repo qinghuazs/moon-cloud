@@ -11,6 +11,7 @@
         <module name="moon-business-web-drift-bottle" />
         <module name="moon-business-gateway" />
         <module name="moon-spring-boot-starter-threadpool" />
+        <module name="moon-business-shorturl" />
         <module name="moon-business-eureka-client" />
         <module name="moon-spring-boot-starter-response" />
         <module name="moon-spring-boot-starter-validator" />
@@ -37,6 +38,7 @@
       <module name="moon-business-gateway" options="" />
       <module name="moon-business-gps" options="" />
       <module name="moon-business-leetcode" options="" />
+      <module name="moon-business-shorturl" options="" />
       <module name="moon-business-web-drift-bottle" options="" />
       <module name="moon-cloud" options="" />
       <module name="moon-concurrent" options="" />

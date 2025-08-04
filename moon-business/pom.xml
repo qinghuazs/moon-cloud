@@ -21,6 +21,7 @@
         <module>moon-business-eureka-client</module>
         <module>moon-business-web-drift-bottle</module>
         <module>moon-business-gateway</module>
+        <module>moon-business-shorturl</module>
     </modules>
 
 </project>
