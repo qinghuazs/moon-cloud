@@ -265,4 +265,55 @@ public class ShortUrlRedirectService {
             accessLog.setOperatingSystem("Other");
         }
     }
+    
+    /**
+     * 获取原始URL（用于重定向控制器）
+     * 
+     * @param shortUrl 短链标识符
+     * @param request HTTP请求对象
+     * @return 原始URL，如果不存在或已过期则返回null
+     */
+    public String getOriginalUrl(String shortUrl, HttpServletRequest request) {
+        return resolveShortUrl(shortUrl, request);
+    }
+    
+    /**
+     * 获取原始URL用于预览（不记录访问日志）
+     * 
+     * @param shortUrl 短链标识符
+     * @return 原始URL，如果不存在或已过期则返回null
+     */
+    public String getOriginalUrlForPreview(String shortUrl) {
+        try {
+            // 1. 从缓存获取原始URL
+            String originalUrl = getOriginalUrlFromCache(shortUrl);
+            if (StringUtils.hasText(originalUrl)) {
+                return originalUrl;
+            }
+            
+            // 2. 从数据库查询
+            Optional<UrlMappingEntity> mappingOpt = urlMappingRepository.findByShortUrl(shortUrl);
+            if (mappingOpt.isEmpty()) {
+                log.warn("短链不存在: {}", shortUrl);
+                return null;
+            }
+            
+            UrlMappingEntity mapping = mappingOpt.get();
+            
+            // 3. 检查URL状态
+            if (!isUrlAccessible(mapping)) {
+                log.warn("短链不可访问: {}, 状态: {}", shortUrl, mapping.getStatus());
+                return null;
+            }
+            
+            // 4. 更新缓存
+            updateCache(shortUrl, mapping.getOriginalUrl());
+            
+            return mapping.getOriginalUrl();
+            
+        } catch (Exception e) {
+            log.error("短链预览失败: {}", e.getMessage(), e);
+            return null;
+        }
+    }
 }

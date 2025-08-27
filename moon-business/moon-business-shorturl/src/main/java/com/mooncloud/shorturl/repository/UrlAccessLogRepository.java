@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -128,4 +129,42 @@ public interface UrlAccessLogRepository extends JpaRepository<UrlAccessLogEntity
            "WHERE l.shortUrl = :shortUrl " +
            "ORDER BY l.accessTime DESC")
     List<UrlAccessLogEntity> getRecentAccessLogs(@Param("shortUrl") String shortUrl, Pageable pageable);
+    
+    /**
+     * 根据访问时间范围统计访问次数
+     * 
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 访问次数
+     */
+    long countByAccessTimeBetween(Date startTime, Date endTime);
+    
+    /**
+     * 统计所有浏览器的访问次数
+     * 
+     * @return 浏览器访问次数统计
+     */
+    Long countByBrowser();
+    
+    /**
+     * 统计今日访问次数
+     * 
+     * @return 今日访问次数
+     */
+    Long countTodayAccess();
+    
+    /**
+     * 按设备类型统计访问次数
+     * 
+     * @return 设备类型访问次数统计
+     */
+    List<Object[]> countByDeviceType();
+    
+    /**
+     * 获取最近10条访问记录
+     * 
+     * @param shortUrl 短链标识符
+     * @return 最近的访问记录
+     */
+    List<UrlAccessLogEntity> findTop10ByShortUrlOrderByAccessTimeDesc(String shortUrl);
 }

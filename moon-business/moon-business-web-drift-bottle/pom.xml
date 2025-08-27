@@ -80,7 +80,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.moon.cloud</groupId>
+            <groupId>com.mooncloud</groupId>
             <artifactId>moon-spring-boot-starter-response</artifactId>
             <scope>compile</scope>
         </dependency>

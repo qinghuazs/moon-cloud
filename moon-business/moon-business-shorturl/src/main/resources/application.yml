@@ -60,6 +60,13 @@ spring:
 # 应用配置
 app:
   domain: http://localhost:8080
+  # 分区配置
+  partition:
+    enabled: true                    # 是否启用分区功能
+    retention-days: 90               # 数据保留天数
+    advance-days: 7                  # 提前创建分区的天数
+    auto-maintenance: true           # 是否启用自动维护
+    batch-size: 1000                 # 批处理大小
   
 # 短链配置
 shorturl:

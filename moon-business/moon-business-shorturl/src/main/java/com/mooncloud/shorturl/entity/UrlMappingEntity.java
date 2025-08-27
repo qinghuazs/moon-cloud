@@ -13,6 +13,11 @@ import java.util.Date;
 /**
  * URL映射实体类
  * 
+ * 分区策略：按创建时间（月）进行分区
+ * - 分区键：YEAR(created_at) * 100 + MONTH(created_at)
+ * - 分区类型：RANGE分区
+ * - 分区维护：自动创建未来分区，清理过期分区
+ * 
  * @author mooncloud
  */
 @Entity
@@ -20,7 +25,9 @@ import java.util.Date;
     @Index(name = "idx_short_url", columnList = "shortUrl", unique = true),
     @Index(name = "idx_url_hash", columnList = "urlHash"),
     @Index(name = "idx_user_id", columnList = "userId"),
-    @Index(name = "idx_created_at", columnList = "createdAt")
+    @Index(name = "idx_created_at", columnList = "createdAt"),
+    @Index(name = "idx_status", columnList = "status"),
+    @Index(name = "idx_expires_at", columnList = "expiresAt")
 })
 @Data
 @EqualsAndHashCode(callSuper = false)

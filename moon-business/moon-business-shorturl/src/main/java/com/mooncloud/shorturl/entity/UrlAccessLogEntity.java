@@ -11,13 +11,21 @@ import java.util.Date;
 /**
  * URL访问记录实体类
  * 
+ * 分区策略：按访问时间（天）进行分区
+ * - 分区键：TO_DAYS(access_time)
+ * - 分区类型：RANGE分区
+ * - 分区维护：自动创建未来分区，清理过期分区
+ * - 数据保留：默认保留90天的访问日志
+ * 
  * @author mooncloud
  */
 @Entity
 @Table(name = "url_access_log", indexes = {
     @Index(name = "idx_short_url", columnList = "shortUrl"),
     @Index(name = "idx_access_time", columnList = "accessTime"),
-    @Index(name = "idx_ip_address", columnList = "ipAddress")
+    @Index(name = "idx_ip_address", columnList = "ipAddress"),
+    @Index(name = "idx_device_type", columnList = "deviceType"),
+    @Index(name = "idx_browser", columnList = "browser")
 })
 @Data
 @EqualsAndHashCode(callSuper = false)

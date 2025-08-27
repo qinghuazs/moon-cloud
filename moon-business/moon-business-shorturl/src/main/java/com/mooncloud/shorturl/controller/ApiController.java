@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +80,8 @@ public class ApiController {
             }
             
             // 生成短链
-            ShortUrlResult result = generatorService.generateShortUrl(originalUrl, customShortUrl, userId);
+            Long userIdLong = StringUtils.hasText(userId) ? Long.parseLong(userId) : null;
+            ShortUrlResult result = generatorService.generateShortUrl(originalUrl, customShortUrl, userIdLong);
             
             response.put("success", result.isSuccess());
             response.put("message", result.getMessage());
@@ -159,10 +162,12 @@ public class ApiController {
                 
                 // 访问统计
                 Long totalAccess = accessLogRepository.countByShortUrl(shortUrl);
+                Date startOfDay = Date.from(LocalDateTime.now().toLocalDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+                Date now = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
                 Long todayAccess = accessLogRepository.countByShortUrlAndAccessTimeBetween(
                     shortUrl, 
-                    LocalDateTime.now().toLocalDate().atStartOfDay(),
-                    LocalDateTime.now()
+                    startOfDay,
+                    now
                 );
                 
                 response.put("totalAccess", totalAccess);
@@ -203,7 +208,8 @@ public class ApiController {
         
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-            Page<UrlMappingEntity> urlPage = urlMappingRepository.findByUserId(userId, pageable);
+            Long userIdLong = Long.parseLong(userId);
+            Page<UrlMappingEntity> urlPage = urlMappingRepository.findByUserId(userIdLong, pageable);
             
             response.put("success", true);
             response.put("content", urlPage.getContent());
@@ -236,9 +242,11 @@ public class ApiController {
             long totalUrls = urlMappingRepository.count();
             
             // 今日新增
+            Date startOfDay = Date.from(LocalDateTime.now().toLocalDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+            Date now = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
             long todayUrls = urlMappingRepository.countByCreatedAtBetween(
-                LocalDateTime.now().toLocalDate().atStartOfDay(),
-                LocalDateTime.now()
+                startOfDay,
+                now
             );
             
             // 总访问次数
@@ -246,8 +254,8 @@ public class ApiController {
             
             // 今日访问次数
             long todayAccess = accessLogRepository.countByAccessTimeBetween(
-                LocalDateTime.now().toLocalDate().atStartOfDay(),
-                LocalDateTime.now()
+                startOfDay,
+                now
             );
             
             response.put("success", true);

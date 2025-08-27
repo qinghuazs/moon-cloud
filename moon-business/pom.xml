@@ -22,6 +22,7 @@
         <module>moon-business-web-drift-bottle</module>
         <module>moon-business-gateway</module>
         <module>moon-business-shorturl</module>
+        <module>moon-business-user</module>
     </modules>
 
 </project>

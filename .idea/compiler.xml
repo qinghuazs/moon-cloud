@@ -10,12 +10,36 @@
         <module name="moon-business-eureka" />
         <module name="moon-business-web-drift-bottle" />
         <module name="moon-business-gateway" />
-        <module name="moon-spring-boot-starter-threadpool" />
-        <module name="moon-business-shorturl" />
         <module name="moon-business-eureka-client" />
-        <module name="moon-spring-boot-starter-response" />
         <module name="moon-spring-boot-starter-validator" />
         <module name="moon-concurrent" />
+      </profile>
+      <profile name="Annotation profile for moon-spring-boot-starter-response" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
+        </processorPath>
+        <module name="moon-spring-boot-starter-response" />
+      </profile>
+      <profile name="Annotation profile for moon-spring-boot-starter-threadpool" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
+        </processorPath>
+        <module name="moon-spring-boot-starter-threadpool" />
+      </profile>
+      <profile name="Annotation profile for moon-business-user" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
+        </processorPath>
+        <module name="moon-business-user" />
       </profile>
       <profile name="Annotation profile for moon-cloud" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -25,6 +49,7 @@
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="moon-business-gps" />
+        <module name="moon-business-shorturl" />
       </profile>
     </annotationProcessing>
   </component>
@@ -39,6 +64,7 @@
       <module name="moon-business-gps" options="" />
       <module name="moon-business-leetcode" options="" />
       <module name="moon-business-shorturl" options="" />
+      <module name="moon-business-user" options="-parameters" />
       <module name="moon-business-web-drift-bottle" options="" />
       <module name="moon-cloud" options="" />
       <module name="moon-concurrent" options="" />

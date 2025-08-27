@@ -9,7 +9,6 @@
         <version>${revision}</version>
     </parent>
 
-    <groupId>com.moon.cloud</groupId>
     <artifactId>moon-spring-boot-starter-response</artifactId>
 
     <dependencies>

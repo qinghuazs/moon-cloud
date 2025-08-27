@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +99,7 @@ public class AdminController {
         
         // 获取访问日志
         Pageable pageable = PageRequest.of(0, 50, Sort.by("accessTime").descending());
-        Page<UrlAccessLogEntity> accessLogs = urlAccessLogRepository.findByShortUrl(shortUrl, pageable);
+        Page<UrlAccessLogEntity> accessLogs = urlAccessLogRepository.findByShortUrlOrderByAccessTimeDesc(shortUrl, pageable);
         
         model.addAttribute("url", url);
         model.addAttribute("accessLogs", accessLogs);
@@ -206,12 +207,8 @@ public class AdminController {
             stats.put("deviceStats", deviceMap);
             
             // 浏览器统计
-            List<Object[]> browserStats = urlAccessLogRepository.countByBrowser();
-            Map<String, Long> browserMap = new HashMap<>();
-            for (Object[] row : browserStats) {
-                browserMap.put((String) row[0], (Long) row[1]);
-            }
-            stats.put("browserStats", browserMap);
+            Long totalBrowserAccess = urlAccessLogRepository.countByBrowser();
+            stats.put("totalBrowserAccess", totalBrowserAccess);
             
         } catch (Exception e) {
             log.error("获取统计数据失败: {}", e.getMessage(), e);
@@ -230,7 +227,7 @@ public class AdminController {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            int updatedCount = urlMappingRepository.updateExpiredUrls();
+            int updatedCount = urlMappingRepository.updateExpiredUrls(new Date());
             result.put("success", true);
             result.put("message", "已更新 " + updatedCount + " 个过期短链");
             result.put("updatedCount", updatedCount);
@@ -245,5 +242,13 @@ public class AdminController {
         }
         
         return ResponseEntity.ok(result);
+    }
+    
+    /**
+     * 分区管理页面
+     */
+    @GetMapping("/partition")
+    public String partitionPage() {
+        return "partition";
     }
 }
