@@ -42,6 +42,7 @@ public class UserController {
         user.setPhone(request.getPhone());
         user.setNickname(request.getNickname());
         user.setAvatarUrl(request.getAvatar());
+        //user.setGender(request.getGender());
         user.setStatus(request.getStatus());
         User createdUser = userService.createUser(user);
         return MoonCloudResponse.success(createdUser);

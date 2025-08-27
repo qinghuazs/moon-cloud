@@ -1,5 +1,6 @@
 package com.moon.cloud.user.service;
 
+import com.moon.cloud.user.dto.LoginResponse;
 import com.moon.cloud.user.entity.User;
 
 /**
@@ -17,9 +18,9 @@ public interface AuthService {
      * @param password 密码
      * @param ipAddress IP地址
      * @param userAgent 用户代理
-     * @return JWT令牌
+     * @return 登录响应对象，包含访问令牌和刷新令牌
      */
-    String login(String username, String password, String ipAddress, String userAgent);
+    LoginResponse login(String username, String password, String ipAddress, String userAgent);
 
     /**
      * 用户登出
@@ -33,9 +34,9 @@ public interface AuthService {
      * 刷新令牌
      *
      * @param refreshToken 刷新令牌
-     * @return 新的JWT令牌
+     * @return 登录响应对象，包含新的访问令牌和刷新令牌
      */
-    String refreshToken(String refreshToken);
+    LoginResponse refreshToken(String refreshToken);
 
     /**
      * 验证令牌

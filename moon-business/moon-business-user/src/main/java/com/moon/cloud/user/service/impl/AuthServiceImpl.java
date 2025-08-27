@@ -1,5 +1,6 @@
 package com.moon.cloud.user.service.impl;
 
+import com.moon.cloud.user.dto.LoginResponse;
 import com.moon.cloud.user.entity.Permission;
 import com.moon.cloud.user.entity.Role;
 import com.moon.cloud.user.entity.User;
@@ -58,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
     private LoginLogService loginLogService;
 
     @Override
-    public String login(String username, String password, String ip, String userAgent) {
+    public LoginResponse login(String username, String password, String ip, String userAgent) {
         // 检查IP是否被锁定
         if (redisUtil.isIpLocked(ip)) {
             throw new RuntimeException("IP地址已被锁定，请稍后再试");
@@ -108,7 +109,7 @@ public class AuthServiceImpl implements AuthService {
             // 缓存用户信息
             redisUtil.cacheUserInfo(user.getId(), user, 24, TimeUnit.HOURS);
 
-            return token;
+            return new LoginResponse(token, refreshToken);
         } catch (Exception e) {
             // 记录登录失败
             redisUtil.recordLoginFailure(username);
@@ -146,9 +147,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String refreshToken(String refreshToken) {
+    public LoginResponse refreshToken(String refreshToken) {
         if (!jwtUtil.validateToken(refreshToken) || !jwtUtil.isRefreshToken(refreshToken)) {
             throw new RuntimeException("无效的刷新令牌");
+        }
+
+        // 检查刷新令牌是否已被使用（在黑名单中）
+        String refreshJti = jwtUtil.getJtiFromToken(refreshToken);
+        if (refreshJti != null && redisUtil.isTokenBlacklisted(refreshJti)) {
+            throw new RuntimeException("刷新令牌已被使用或已失效");
         }
 
         String username = jwtUtil.getUsernameFromToken(refreshToken);
@@ -160,9 +167,19 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("用户不存在或已被禁用");
         }
 
-        // 生成新的访问令牌
-        String jti = UUID.randomUUID().toString();
-        return jwtUtil.generateTokenWithJti(userId, username, jti);
+        // 将旧的刷新令牌加入黑名单
+        if (refreshJti != null) {
+            Long remainingTime = jwtUtil.getTokenRemainingTime(refreshToken);
+            if (remainingTime > 0) {
+                redisUtil.addToBlacklist(refreshJti, remainingTime);
+            }
+        }
+
+        // 生成新的访问令牌和刷新令牌
+        String newAccessToken = generateToken(user);
+        String newRefreshToken = generateRefreshToken(user);
+
+        return new LoginResponse(newAccessToken, newRefreshToken);
     }
 
     @Override

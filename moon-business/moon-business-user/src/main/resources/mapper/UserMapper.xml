@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moon.cloud.user.mapper.UserMapper">
+
+    <!-- 用户结果映射 -->
+    <resultMap id="BaseResultMap" type="com.moon.cloud.user.entity.User">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="password" property="passwordHash" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="real_name" property="realName" jdbcType="VARCHAR"/>
+        <result column="nickname" property="nickname" jdbcType="VARCHAR"/>
+        <result column="avatar" property="avatarUrl" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="TINYINT"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="last_login_time" property="lastLoginAt" jdbcType="TIMESTAMP"/>
+        <result column="last_login_ip" property="lastLoginIp" jdbcType="VARCHAR"/>
+        <result column="password_update_time" property="passwordUpdateTime" jdbcType="TIMESTAMP"/>
+        <result column="created_time" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_time" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 用户角色结果映射 -->
+    <resultMap id="UserWithRolesResultMap" type="com.moon.cloud.user.entity.User" extends="BaseResultMap">
+        <collection property="roles" ofType="com.moon.cloud.user.entity.Role">
+            <id column="role_id" property="id" jdbcType="BIGINT"/>
+            <result column="role_name" property="roleName" jdbcType="VARCHAR"/>
+            <result column="role_code" property="roleCode" jdbcType="VARCHAR"/>
+            <result column="role_description" property="description" jdbcType="VARCHAR"/>
+            <result column="role_status" property="status" jdbcType="TINYINT"/>
+        </collection>
+    </resultMap>
+
+    <!-- 根据用户名查询用户（包含角色信息） -->
+    <select id="selectUserWithRolesByUsername" resultMap="UserWithRolesResultMap">
+        SELECT 
+            u.id,
+            u.username,
+            u.password,
+            u.email,
+            u.phone,
+            u.real_name,
+            u.nickname,
+            u.avatar,
+            u.gender,
+            u.status,
+            u.remark,
+            u.last_login_time,
+            u.last_login_ip,
+            u.password_update_time,
+            u.created_time,
+            u.updated_time,
+            r.id as role_id,
+            r.name as role_name,
+            r.code as role_code,
+            r.description as role_description,
+            r.status as role_status
+        FROM sys_user u
+        LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+        LEFT JOIN sys_role r ON ur.role_id = r.id AND r.deleted = 0 AND r.status = 1
+        WHERE u.username = #{username}
+          AND u.deleted = 0
+          AND u.status = 1
+    </select>
+
+    <!-- 分页查询用户列表（包含角色信息） -->
+    <select id="selectUserPageWithRoles" resultMap="UserWithRolesResultMap">
+        SELECT 
+            u.id,
+            u.username,
+            u.password,
+            u.email,
+            u.phone,
+            u.real_name,
+            u.nickname,
+            u.avatar,
+            u.gender,
+            u.status,
+            u.remark,
+            u.last_login_time,
+            u.last_login_ip,
+            u.password_update_time,
+            u.created_time,
+            u.updated_time,
+            r.id as role_id,
+            r.name as role_name,
+            r.code as role_code,
+            r.description as role_description,
+            r.status as role_status
+        FROM sys_user u
+        LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+        LEFT JOIN sys_role r ON ur.role_id = r.id AND r.deleted = 0 AND r.status = 1
+        WHERE u.deleted = 0
+        <if test="username != null and username != ''">
+            AND u.username LIKE CONCAT('%', #{username}, '%')
+        </if>
+        <if test="email != null and email != ''">
+            AND u.email LIKE CONCAT('%', #{email}, '%')
+        </if>
+        <if test="status != null">
+            AND u.status = #{status}
+        </if>
+        ORDER BY u.created_time DESC
+    </select>
+
+    <!-- 根据角色ID查询用户列表 -->
+    <select id="selectUsersByRoleId" resultMap="BaseResultMap">
+        SELECT 
+            u.id,
+            u.username,
+            u.password,
+            u.email,
+            u.phone,
+            u.real_name,
+            u.nickname,
+            u.avatar,
+            u.gender,
+            u.status,
+            u.remark,
+            u.last_login_time,
+            u.last_login_ip,
+            u.password_update_time,
+            u.created_time,
+            u.updated_time
+        FROM sys_user u
+        INNER JOIN sys_user_role ur ON u.id = ur.user_id
+        WHERE ur.role_id = #{roleId}
+          AND u.deleted = 0
+          AND u.status = 1
+        ORDER BY u.created_time DESC
+    </select>
+
+    <!-- 批量更新用户状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE sys_user 
+        SET status = #{status}, updated_time = NOW()
+        WHERE id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+</mapper>

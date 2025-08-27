@@ -2,6 +2,7 @@ package com.moon.cloud.user.controller;
 
 import com.moon.cloud.response.web.MoonCloudResponse;
 import com.moon.cloud.user.dto.LoginRequest;
+import com.moon.cloud.user.dto.LoginResponse;
 import com.moon.cloud.user.dto.RefreshTokenRequest;
 import com.moon.cloud.user.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,22 +29,21 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @Operation(summary = "用户登录", description = "用户登录获取访问令牌")
+    @Operation(summary = "用户登录", description = "用户登录获取访问令牌和刷新令牌")
     @PostMapping("/login")
-    public MoonCloudResponse<Map<String, Object>> login(@Valid @RequestBody LoginRequest loginRequest,
+    public MoonCloudResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
                                               HttpServletRequest request) {
         String ip = getClientIpAddress(request);
         String userAgent = request.getHeader("User-Agent");
         
-        String token = authService.login(
+        LoginResponse loginResponse = authService.login(
             loginRequest.getUsername(),
             loginRequest.getPassword(),
             ip,
             userAgent
         );
         
-        Map<String, Object> result = Map.of("token", token);
-        return MoonCloudResponse.success(result);
+        return MoonCloudResponse.success(loginResponse);
     }
 
     @Operation(summary = "用户登出", description = "用户登出，令牌加入黑名单")
@@ -56,11 +56,11 @@ public class AuthController {
         return MoonCloudResponse.success();
     }
 
-    @Operation(summary = "刷新令牌", description = "使用刷新令牌获取新的访问令牌")
+    @Operation(summary = "刷新令牌", description = "使用刷新令牌获取新的访问令牌和刷新令牌")
     @PostMapping("/refresh")
-    public MoonCloudResponse<String> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-        String newToken = authService.refreshToken(refreshTokenRequest.getRefreshToken());
-        return MoonCloudResponse.success(newToken);
+    public MoonCloudResponse<LoginResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        LoginResponse loginResponse = authService.refreshToken(refreshTokenRequest.getRefreshToken());
+        return MoonCloudResponse.success(loginResponse);
     }
 
     @Operation(summary = "验证令牌", description = "验证访问令牌是否有效")

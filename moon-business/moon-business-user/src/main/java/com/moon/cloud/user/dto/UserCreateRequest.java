@@ -37,9 +37,9 @@ public class UserCreateRequest {
     @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
     private String phone;
 
-    @Schema(description = "真实姓名", example = "张三")
-    @Size(max = 50, message = "真实姓名长度不能超过50个字符")
-    private String realName;
+//    @Schema(description = "真实姓名", example = "张三")
+//    @Size(max = 50, message = "真实姓名长度不能超过50个字符")
+//    private String realName;
 
     @Schema(description = "昵称", example = "管理员")
     @Size(max = 50, message = "昵称长度不能超过50个字符")
@@ -54,7 +54,7 @@ public class UserCreateRequest {
     @Schema(description = "状态：0-禁用，1-启用", example = "1")
     private Integer status = 1;
 
-    @Schema(description = "备注", example = "系统管理员")
-    @Size(max = 500, message = "备注长度不能超过500个字符")
-    private String remark;
+//    @Schema(description = "备注", example = "系统管理员")
+//    @Size(max = 500, message = "备注长度不能超过500个字符")
+//    private String remark;
 }
