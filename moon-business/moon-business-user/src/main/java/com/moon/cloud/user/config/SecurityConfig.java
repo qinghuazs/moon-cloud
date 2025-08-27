@@ -82,18 +82,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             // 禁用CSRF
-            .csrf().disable()
+            .csrf(csrf -> csrf.disable())
             // 启用CORS
-            .cors().configurationSource(corsConfigurationSource())
-            .and()
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             // 配置会话管理为无状态
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             // 配置异常处理
-            .exceptionHandling()
+            .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler)
-            .and()
+            )
             // 配置请求授权
             .authorizeHttpRequests(authz -> authz
                 // 公开接口，无需认证
