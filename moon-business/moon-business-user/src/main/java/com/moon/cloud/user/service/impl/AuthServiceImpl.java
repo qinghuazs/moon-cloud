@@ -1,5 +1,6 @@
 package com.moon.cloud.user.service.impl;
 
+import com.moon.cloud.user.common.SpringContextUtil;
 import com.moon.cloud.user.dto.LoginResponse;
 import com.moon.cloud.user.entity.Permission;
 import com.moon.cloud.user.entity.Role;
@@ -21,6 +22,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
