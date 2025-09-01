@@ -1,8 +1,8 @@
 -- Moon Cloud 用户管理系统数据库初始化脚本
 -- 创建数据库
-CREATE DATABASE IF NOT EXISTS `moon_cloud` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `moon` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE `moon_cloud`;
+USE `moon`;
 
 -- 用户表
 CREATE TABLE IF NOT EXISTS `sys_user` (

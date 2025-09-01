@@ -42,13 +42,6 @@ public class SecurityConfig {
     @Autowired
     private AccessDeniedHandlerImpl accessDeniedHandler;
 
-    /**
-     * 密码编码器
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     /**
      * 认证管理器

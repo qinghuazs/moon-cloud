@@ -1,5 +1,5 @@
 -- Moon Cloud 用户管理系统初始数据脚本
-USE `moon_cloud`;
+USE `moon`;
 
 -- 插入超级管理员用户（密码：admin123）
 INSERT INTO `sys_user` (`id`, `username`, `password`, `email`, `phone`, `real_name`, `nickname`, `gender`, `status`, `remark`, `created_by`, `created_time`) VALUES

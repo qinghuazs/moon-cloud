@@ -120,10 +120,10 @@ public interface PermissionMapper extends BaseMapper<Permission> {
      * @param excludeId 排除的权限ID（用于更新时检查）
      * @return 是否存在
      */
-    @Select("<script>" +
-            "SELECT COUNT(*) FROM sys_permission WHERE permission_code = #{permissionCode}" +
-            "<if test='excludeId != null'> AND id != #{excludeId}</if>" +
-            "</script>")
+//    @Select("<script>" +
+//            "SELECT COUNT(*) FROM sys_permission WHERE permission_code = #{permissionCode}" +
+//            "<if test='excludeId != null'> AND id != #{excludeId}</if>" +
+//            "</script>")
     Long countByPermissionCode(@Param("permissionCode") String permissionCode, @Param("excludeId") Long excludeId);
 
     /**
@@ -144,10 +144,10 @@ public interface PermissionMapper extends BaseMapper<Permission> {
      * @param status 状态（可选）
      * @return 权限数量
      */
-    @Select("<script>" +
-            "SELECT COUNT(*) FROM sys_permission WHERE 1=1" +
-            "<if test='resourceType != null and resourceType != \\'\\''> AND resource_type = #{resourceType}</if>" +
-            "<if test='status != null'> AND status = #{status}</if>" +
-            "</script>")
+//    @Select("<script>" +
+//            "SELECT COUNT(*) FROM sys_permission WHERE 1=1" +
+//            "<if test='resourceType != null and resourceType != \'\''> AND resource_type = #{resourceType}</if>" +
+//            "<if test='status != null'> AND status = #{status}</if>" +
+//            "</script>")
     Long countPermissions(@Param("resourceType") String resourceType, @Param("status") Integer status);
 }

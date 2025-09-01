@@ -84,13 +84,13 @@ public interface LoginLogMapper extends BaseMapper<LoginLog> {
      * @param endTime 结束时间（可选）
      * @return 登录次数
      */
-    @Select("<script>" +
-            "SELECT COUNT(*) FROM sys_login_log WHERE 1=1" +
-            "<if test='userId != null'> AND user_id = #{userId}</if>" +
-            "<if test='loginStatus != null'> AND login_status = #{loginStatus}</if>" +
-            "<if test='startTime != null'> AND login_time >= #{startTime}</if>" +
-            "<if test='endTime != null'> AND login_time <= #{endTime}</if>" +
-            "</script>")
+//    @Select("<script>" +
+//            "SELECT COUNT(*) FROM sys_login_log WHERE 1=1" +
+//            "<if test='userId != null'> AND user_id = #{userId}</if>" +
+//            "<if test='loginStatus != null'> AND login_status = #{loginStatus}</if>" +
+//            "<if test='startTime != null'> AND login_time >= #{startTime}</if>" +
+//            "<if test='endTime != null'> AND login_time <= #{endTime}</if>" +
+//            "</script>")
     Long countLoginLogs(@Param("userId") Long userId,
                        @Param("loginStatus") Integer loginStatus,
                        @Param("startTime") LocalDateTime startTime,
