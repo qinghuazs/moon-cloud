@@ -21,6 +21,10 @@ public class User {
     public static final Integer STATUS_DISABLED = 0;
     public static final Integer STATUS_ENABLED = 1;
 
+    // 登录提供商类型常量
+    public static final String PROVIDER_LOCAL = "LOCAL";
+    public static final String PROVIDER_GOOGLE = "GOOGLE";
+
     @TableId(value = "id", type = IdType.AUTO)
     @Schema(description = "用户ID")
     private Long id;
@@ -65,6 +69,18 @@ public class User {
     @TableField("last_login_at")
     @Schema(description = "最后登录时间")
     private LocalDateTime lastLoginAt;
+
+    @TableField("google_id")
+    @Schema(description = "Google用户ID")
+    private String googleId;
+
+    @TableField("provider_type")
+    @Schema(description = "登录提供商类型：LOCAL-本地，GOOGLE-谷歌")
+    private String providerType;
+
+    @TableField("is_email_verified")
+    @Schema(description = "邮箱是否已验证")
+    private Boolean isEmailVerified;
 
     @TableField(exist = false)
     @Schema(description = "用户角色列表")
@@ -175,6 +191,30 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public String getProviderType() {
+        return providerType;
+    }
+
+    public void setProviderType(String providerType) {
+        this.providerType = providerType;
+    }
+
+    public Boolean getIsEmailVerified() {
+        return isEmailVerified;
+    }
+
+    public void setIsEmailVerified(Boolean isEmailVerified) {
+        this.isEmailVerified = isEmailVerified;
     }
 
     @Override

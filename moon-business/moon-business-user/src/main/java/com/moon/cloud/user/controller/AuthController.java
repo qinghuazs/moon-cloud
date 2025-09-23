@@ -1,10 +1,14 @@
 package com.moon.cloud.user.controller;
 
 import com.moon.cloud.response.web.MoonCloudResponse;
+import com.moon.cloud.user.dto.GoogleLoginRequest;
 import com.moon.cloud.user.dto.LoginRequest;
 import com.moon.cloud.user.dto.LoginResponse;
 import com.moon.cloud.user.dto.RefreshTokenRequest;
+import com.moon.cloud.user.dto.RegisterRequest;
+import com.moon.cloud.user.entity.User;
 import com.moon.cloud.user.service.AuthService;
+import com.moon.cloud.user.service.GoogleOAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +32,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private GoogleOAuthService googleOAuthService;
 
     @Operation(summary = "用户登录", description = "用户登录获取访问令牌和刷新令牌")
     @PostMapping("/login")
@@ -89,6 +96,58 @@ public class AuthController {
         }
         
         return MoonCloudResponse.success(user);
+    }
+
+    @Operation(summary = "用户注册", description = "用户注册并自动登录")
+    @PostMapping("/register")
+    public MoonCloudResponse<LoginResponse> register(@Valid @RequestBody RegisterRequest registerRequest,
+                                                   HttpServletRequest request) {
+        String ip = getClientIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+
+        LoginResponse loginResponse = authService.register(registerRequest, ip, userAgent);
+        return MoonCloudResponse.success(loginResponse);
+    }
+
+    @Operation(summary = "Google登录", description = "使用Google OAuth进行登录")
+    @PostMapping("/login/google")
+    public MoonCloudResponse<LoginResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest googleLoginRequest,
+                                                       HttpServletRequest request) {
+        String ip = getClientIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+
+        LoginResponse loginResponse = googleOAuthService.loginWithGoogle(
+            googleLoginRequest.getIdToken(), ip, userAgent);
+        return MoonCloudResponse.success(loginResponse);
+    }
+
+    @Operation(summary = "Token保活", description = "延长当前令牌的有效期")
+    @PostMapping("/keepalive")
+    public MoonCloudResponse<LoginResponse> keepAlive(HttpServletRequest request) {
+        String token = getTokenFromRequest(request);
+        if (!StringUtils.hasText(token)) {
+            return MoonCloudResponse.error("未提供访问令牌");
+        }
+
+        // 验证令牌是否有效
+        if (!authService.validateToken(token)) {
+            return MoonCloudResponse.error("无效的访问令牌");
+        }
+
+        // 获取用户信息
+        User user = authService.getUserFromToken(token);
+        if (user == null) {
+            return MoonCloudResponse.error("用户不存在");
+        }
+
+        // 生成新的令牌
+        String newToken = authService.generateToken(user);
+        String newRefreshToken = authService.generateRefreshToken(user);
+
+        // 将旧令牌加入黑名单
+        authService.blacklistToken(token);
+
+        return MoonCloudResponse.success(new LoginResponse(newToken, newRefreshToken));
     }
 
     /**

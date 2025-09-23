@@ -2,6 +2,7 @@ package com.moon.cloud.user.service.impl;
 
 import com.moon.cloud.user.common.SpringContextUtil;
 import com.moon.cloud.user.dto.LoginResponse;
+import com.moon.cloud.user.dto.RegisterRequest;
 import com.moon.cloud.user.entity.Permission;
 import com.moon.cloud.user.entity.Role;
 import com.moon.cloud.user.entity.User;
@@ -411,5 +412,62 @@ public class AuthServiceImpl implements AuthService {
                 .credentialsExpired(false)
                 .disabled(user.getStatus() == 0)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public LoginResponse register(RegisterRequest registerRequest, String ip, String userAgent) {
+        // 检查用户名是否已存在
+        if (userMapper.selectByUsername(registerRequest.getUsername()) != null) {
+            throw new RuntimeException("用户名已存在");
+        }
+
+        // 检查邮箱是否已存在
+        if (userMapper.selectByEmail(registerRequest.getEmail()) != null) {
+            throw new RuntimeException("邮箱已被注册");
+        }
+
+        // 检查手机号是否已存在（如果提供了手机号）
+        if (registerRequest.getPhone() != null && !registerRequest.getPhone().trim().isEmpty()) {
+            if (userMapper.selectByPhone(registerRequest.getPhone()) != null) {
+                throw new RuntimeException("手机号已被注册");
+            }
+        }
+
+        // 创建新用户
+        User newUser = new User();
+        newUser.setUsername(registerRequest.getUsername());
+        newUser.setEmail(registerRequest.getEmail());
+        newUser.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
+        newUser.setNickname(registerRequest.getNickname() != null ? registerRequest.getNickname() : registerRequest.getUsername());
+        newUser.setPhone(registerRequest.getPhone());
+        newUser.setProviderType(User.PROVIDER_LOCAL);
+        newUser.setIsEmailVerified(false);
+        newUser.setStatus(User.STATUS_ENABLED);
+        newUser.setCreatedAt(LocalDateTime.now());
+        newUser.setUpdatedAt(LocalDateTime.now());
+
+        // 保存用户
+        userMapper.insert(newUser);
+
+        // 为新用户分配默认角色
+        try {
+            userMapper.assignDefaultRole(newUser.getId());
+        } catch (Exception e) {
+            // 如果分配角色失败，记录日志但不影响注册
+            System.err.println("分配默认角色失败，用户ID: " + newUser.getId() + ", 错误: " + e.getMessage());
+        }
+
+        // 生成JWT令牌
+        String token = generateToken(newUser);
+        String refreshToken = generateRefreshToken(newUser);
+
+        // 记录登录成功日志
+        loginLogService.recordLoginLog(newUser.getId(), ip, userAgent, 1);
+
+        // 缓存用户信息
+        redisUtil.cacheUserInfo(newUser.getId(), newUser, 24, TimeUnit.HOURS);
+
+        return new LoginResponse(token, refreshToken);
     }
 }

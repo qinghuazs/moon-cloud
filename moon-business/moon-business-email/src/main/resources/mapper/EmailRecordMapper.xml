@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moon.cloud.email.mapper.EmailRecordMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.moon.cloud.email.entity.EmailRecord">
+        <id column="id" property="id" />
+        <result column="to_email" property="toEmail" />
+        <result column="cc_email" property="ccEmail" />
+        <result column="bcc_email" property="bccEmail" />
+        <result column="subject" property="subject" />
+        <result column="content" property="content" />
+        <result column="html_content" property="htmlContent" />
+        <result column="template_code" property="templateCode" />
+        <result column="template_variables" property="templateVariables" />
+        <result column="attachment_info" property="attachmentInfo" />
+        <result column="status" property="status" />
+        <result column="business_type" property="businessType" />
+        <result column="business_id" property="businessId" />
+        <result column="priority" property="priority" />
+        <result column="send_time" property="sendTime" />
+        <result column="schedule_time" property="scheduleTime" />
+        <result column="sent_time" property="sentTime" />
+        <result column="retry_count" property="retryCount" />
+        <result column="max_retry_count" property="maxRetryCount" />
+        <result column="error_message" property="errorMessage" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 分页查询邮件记录 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT * FROM email_record
+        <where>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="businessType != null and businessType != ''">
+                AND business_type = #{businessType}
+            </if>
+            <if test="startDate != null">
+                AND create_time >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND create_time <= #{endDate}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据条件统计状态 -->
+    <select id="selectStatisticsByStatus" resultType="map">
+        SELECT
+            status,
+            COUNT(*) as count
+        FROM email_record
+        <where>
+            <if test="params.businessType != null and params.businessType != ''">
+                AND business_type = #{params.businessType}
+            </if>
+            <if test="params.startTime != null">
+                AND create_time >= #{params.startTime}
+            </if>
+            <if test="params.endTime != null">
+                AND create_time <= #{params.endTime}
+            </if>
+        </where>
+        GROUP BY status
+    </select>
+
+    <!-- 按日期统计邮件发送情况 -->
+    <select id="selectDailyStatistics" resultType="map">
+        SELECT
+            DATE(create_time) as date,
+            COUNT(*) as sent,
+            SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as success,
+            SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as failed
+        FROM email_record
+        <where>
+            <if test="params.businessType != null and params.businessType != ''">
+                AND business_type = #{params.businessType}
+            </if>
+            <if test="params.startTime != null">
+                AND create_time >= #{params.startTime}
+            </if>
+            <if test="params.endTime != null">
+                AND create_time <= #{params.endTime}
+            </if>
+        </where>
+        GROUP BY DATE(create_time)
+        ORDER BY date DESC
+        LIMIT 30
+    </select>
+
+    <!-- 统计邮件发送情况 -->
+    <select id="selectEmailStatistics" resultType="map">
+        SELECT
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as successCount,
+            SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as failedCount,
+            SUM(CASE WHEN status = 0 OR status = 1 THEN 1 ELSE 0 END) as pendingCount
+        FROM email_record
+        <where>
+            <if test="businessType != null and businessType != ''">
+                AND business_type = #{businessType}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND DATE(create_time) >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND DATE(create_time) <= #{endDate}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -99,4 +99,29 @@ public interface UserMapper extends BaseMapper<User> {
             "<if test='status != null'> AND status = #{status}</if>" +
             "</script>")
     Long countUsers(@Param("status") Integer status);
+
+    /**
+     * 根据Google ID查询用户
+     *
+     * @param googleId Google用户ID
+     * @return 用户信息
+     */
+    @Select("SELECT * FROM sys_user WHERE google_id = #{googleId}")
+    User selectByGoogleId(@Param("googleId") String googleId);
+
+    /**
+     * 根据用户名查询用户
+     *
+     * @param username 用户名
+     * @return 用户信息
+     */
+    @Select("SELECT * FROM sys_user WHERE username = #{username}")
+    User selectByUsername(@Param("username") String username);
+
+    /**
+     * 为用户分配默认角色
+     *
+     * @param userId 用户ID
+     */
+    void assignDefaultRole(@Param("userId") Long userId);
 }

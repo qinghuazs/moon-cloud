@@ -1,14 +1,14 @@
 # 服务配置
 server:
-  port: 8080
+  port: 8081
   servlet:
-    context-path: /api/user
+    context-path: /api/email
 
 # Spring配置
 spring:
   application:
-    name: moon-business-user
-  
+    name: moon-business-email
+
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -20,17 +20,17 @@ spring:
       maximum-pool-size: 20
       auto-commit: true
       idle-timeout: 30000
-      pool-name: DatebookHikariCP
+      pool-name: EmailHikariCP
       max-lifetime: 1800000
       connection-timeout: 30000
       connection-test-query: SELECT 1
-  
+
   # Redis配置
   redis:
     host: 127.0.0.1
     port: 6379
-    password: 
-    database: 0
+    password:
+    database: 1
     timeout: 6000ms
     lettuce:
       pool:
@@ -38,7 +38,33 @@ spring:
         max-wait: -1ms
         max-idle: 8
         min-idle: 0
-  
+
+  # 邮件配置
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: "*"
+        debug: false
+    default-encoding: UTF-8
+
+  # Thymeleaf配置
+  thymeleaf:
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
   # Jackson配置
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -61,39 +87,66 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: ASSIGN_ID
-      logic-delete-field: deleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
       update-strategy: not_null
       insert-strategy: not_null
       select-strategy: not_empty
   mapper-locations: classpath*:mapper/**/*.xml
-  type-aliases-package: com.moon.cloud.user.entity
+  type-aliases-package: com.moon.cloud.email.entity
 
-# JWT配置
-jwt:
-  secret: moonCloudUserSecretKey2024
-  expiration: 86400000  # 24小时
-  refresh-expiration: 604800000  # 7天
-  header: Authorization
-  prefix: Bearer
+# 邮件模块配置
+moon:
+  email:
+    # SMTP服务器配置
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    from-name: ${MAIL_FROM_NAME:Moon Cloud}
 
-# Google OAuth配置
-google:
-  oauth:
-    client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+    # 安全配置
+    enable-tls: true
+    enable-ssl: false
+
+    # 超时配置
+    connection-timeout: 60000
+    read-timeout: 60000
+
+    # 调试配置
+    debug: ${MAIL_DEBUG:false}
+
+    # 编码配置
+    encoding: UTF-8
+
+    # 路径配置
+    template-path: classpath:/templates/email/
+    attachment-path: /tmp/email/attachments/
+
+    # 发送限制
+    max-recipients: 50
+
+    # 队列配置
+    enable-queue: true
+    queue-max-size: 1000
+    async-pool-size: 10
+
+    # 历史记录
+    enable-history: true
+
+    # 重试配置
+    retry-count: 3
+    retry-interval: 5000
 
 # 日志配置
 logging:
   level:
-    com.moon.cloud.user: DEBUG
-    org.springframework.security: DEBUG
+    com.moon.cloud.email: DEBUG
+    org.springframework.mail: DEBUG
     org.springframework.web: DEBUG
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
     file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
   file:
-    name: logs/moon-business-user.log
+    name: logs/moon-business-email.log
     max-file-size: 100MB
     max-history: 30
 
@@ -110,17 +163,38 @@ springdoc:
   group-configs:
     - group: 'default'
       paths-to-match: '/**'
-      packages-to-scan: com.moon.cloud.user.controller
+      packages-to-scan: com.moon.cloud.email.controller
 
 # 管理端点配置
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,mail
   endpoint:
     health:
       show-details: when-authorized
   info:
     env:
       enabled: true
+
+# 异步配置
+async:
+  executor:
+    thread:
+      core-pool-size: 10
+      max-pool-size: 50
+      queue-capacity: 100
+      keep-alive-seconds: 60
+      thread-name-prefix: email-async-
+
+# Quartz配置 (定时任务)
+spring:
+  quartz:
+    job-store-type: memory
+    scheduler-name: EmailScheduler
+    properties:
+      org:
+        quartz:
+          threadPool:
+            threadCount: 5

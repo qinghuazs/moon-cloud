@@ -1,6 +1,7 @@
 package com.moon.cloud.user.service;
 
 import com.moon.cloud.user.dto.LoginResponse;
+import com.moon.cloud.user.dto.RegisterRequest;
 import com.moon.cloud.user.entity.User;
 
 /**
@@ -144,4 +145,14 @@ public interface AuthService {
      * @return 用户信息
      */
     User loadUserByUsername(String username);
+
+    /**
+     * 用户注册
+     *
+     * @param registerRequest 注册请求
+     * @param ip 客户端IP
+     * @param userAgent 用户代理
+     * @return 登录响应对象，包含访问令牌和刷新令牌
+     */
+    LoginResponse register(RegisterRequest registerRequest, String ip, String userAgent);
 }

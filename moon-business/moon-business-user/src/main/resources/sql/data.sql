@@ -2,12 +2,12 @@
 USE `moon`;
 
 -- 插入超级管理员用户（密码：admin123）
-INSERT INTO `sys_user` (`id`, `username`, `password`, `email`, `phone`, `real_name`, `nickname`, `gender`, `status`, `remark`, `created_by`, `created_time`) VALUES
-(1, 'admin', '$2a$10$7JB720yubVSOfvVWbazBuOWShWvheWjxVYtnpkmjNdwYKTHdAaoGC', 'admin@mooncloud.com', '13800138000', '系统管理员', '超级管理员', 1, 1, '系统超级管理员账户', 1, NOW());
+INSERT INTO `sys_user` (`id`, `username`, `password_hash`, `email`, `phone`, `nickname`, `status`, `provider_type`, `is_email_verified`, `created_at`) VALUES
+(1, 'admin', '$2a$10$7JB720yubVSOfvVWbazBuOWShWvheWjxVYtnpkmjNdwYKTHdAaoGC', 'admin@mooncloud.com', '13800138000', '超级管理员', 1, 'LOCAL', TRUE, NOW());
 
 -- 插入普通用户（密码：user123）
-INSERT INTO `sys_user` (`id`, `username`, `password`, `email`, `phone`, `real_name`, `nickname`, `gender`, `status`, `remark`, `created_by`, `created_time`) VALUES
-(2, 'user', '$2a$10$HiiEL2fkJcPoAsbXMXZ.OuJQjmqXaM5yzT9byKDVHI2k9QeyHpb.m', 'user@mooncloud.com', '13800138001', '普通用户', '测试用户', 1, 1, '普通用户账户', 1, NOW());
+INSERT INTO `sys_user` (`id`, `username`, `password_hash`, `email`, `phone`, `nickname`, `status`, `provider_type`, `is_email_verified`, `created_at`) VALUES
+(2, 'user', '$2a$10$HiiEL2fkJcPoAsbXMXZ.OuJQjmqXaM5yzT9byKDVHI2k9QeyHpb.m', 'user@mooncloud.com', '13800138001', '测试用户', 1, 'LOCAL', TRUE, NOW());
 
 -- 插入角色数据
 INSERT INTO `sys_role` (`id`, `name`, `code`, `description`, `sort`, `status`, `remark`, `created_by`, `created_time`) VALUES

@@ -91,8 +91,10 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/auth/register",
+                    "/api/auth/login/google",
                     "/api/auth/refresh",
                     "/api/auth/logout",
+                    "/api/auth/validate",
                     "/api/auth/captcha",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
@@ -103,6 +105,11 @@ public class SecurityConfig {
                     "/error",
                     "/actuator/**"
                 ).permitAll()
+                // 需要认证的接口
+                .requestMatchers(
+                    "/api/auth/me",
+                    "/api/auth/keepalive"
+                ).authenticated()
                 // 用户管理接口需要相应权限
                 .requestMatchers("/api/users/**").hasAnyAuthority("user:read", "user:write", "user:delete")
                 // 角色管理接口需要相应权限
