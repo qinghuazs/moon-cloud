@@ -15,58 +15,26 @@ public class N54 {
         System.out.println(list);
     }
 
+
     public List<Integer> spiralOrder(int[][] matrix) {
         int m = matrix.length;
         int n = matrix[0].length;
-        int direction = 1;
+
+        int[][] dirs = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        int i = 0;
+        int j = 0;
         List<Integer> list = new ArrayList<>();
-        int k = 0;
-        while(k < m * n) {
-            if(direction == 1) {
-                for(int i = 0; i < n; i++) {
-                    if (matrix[0][i] == -101) {
-                        i--;
-                        break;
-                    }
-                    list.add(matrix[0][i]);
-                    matrix[0][i] = -101;
-
-                }
-                direction = 2;
-            } else if(direction == 2) {
-                for(int i = 0; i < m; i++) {
-                    if (matrix[i][n - 1] == -101) {
-                        i--;
-                        break;
-                    }
-                    list.add(matrix[i][n - 1]);
-                    matrix[i][n - 1] = -101;
-                }
-                direction = 3;
+        int direction = 0;
+        for(int k = 0; k < n * m; k++) {
+            list.add(matrix[i][j]);
+            matrix[i][j] = -101;
+            int nextI = i + dirs[direction][0];
+            int nextJ = j + dirs[direction][1];
+            if(nextI < 0 || nextI >= m || nextJ < 0 || nextJ >= n || matrix[nextI][nextJ] == -101) {
+                direction = (direction+1) % 4;
             }
-            else if(direction == 3) {
-                for(int i = n - 1; i >= 0; i--) {
-
-                    if (matrix[m - 1][i] == -101) {
-                        i++;
-                        break;
-                    }
-                    list.add(matrix[m - 1][i]);
-                    matrix[m - 1][i] = -101;
-                }
-                direction = 4;
-            } else if(direction == 4) {
-                for(int i = m - 1; i >= 0; i--) {
-                    if (matrix[i][0] == -101) {
-                        i++;
-                        break;
-                    }
-                    list.add(matrix[i][0]);
-                    matrix[i][0] = -101;
-                }
-                direction = 1;
-            }
-            k++;
+            i += dirs[direction][0];
+            j += dirs[direction][1];
         }
         return list;
     }

@@ -3,7 +3,12 @@
     "allow": [
       "Bash(mvn clean compile:*)",
       "Bash(mvn:*)",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Read(//Users/xingleiwang/Documents/Code/Java/**)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(ESLINT_NO_DEV_ERRORS=true npm run build)"
     ],
     "deny": [],
     "ask": []
