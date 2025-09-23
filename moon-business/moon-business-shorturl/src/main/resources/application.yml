@@ -9,40 +9,55 @@ spring:
   
   # 数据源配置
   datasource:
-    url: jdbc:h2:mem:shorturl;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: 
+    url: jdbc:mysql://localhost:3306/shorturl?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: password
+
+    # HikariCP连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: DateSourceHikariCP
+      max-lifetime: 900000
+      connection-timeout: 30000 
     
-  # JPA配置
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*.xml
+  type-aliases-package: com.mooncloud.shorturl.entity
     
-  # H2控制台配置
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  # 缓存配置
+  cache:
+    type: redis
+    redis:
+      time-to-live: 24h
+      cache-null-values: false
       
   # Redis配置
   redis:
     host: localhost
     port: 6379
-    password: 
+    password:
+    timeout: 3000ms
     database: 0
-    timeout: 2000ms
     lettuce:
       pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
+        max-active: 20
         max-wait: -1ms
+        max-idle: 10
+        min-idle: 5
         
   # Thymeleaf配置
   thymeleaf:
@@ -71,7 +86,7 @@ app:
 # 短链配置
 shorturl:
   # 默认短链长度
-  default-length: 6
+  default-length: 7
   # 最大重试次数
   max-retry: 3
   # 默认过期时间（天）
@@ -80,22 +95,49 @@ shorturl:
   cache-expire-seconds: 3600
   # 机器ID（用于Snowflake算法）
   machine-id: 1
+  # 布隆过滤器配置
+  bloom-filter:
+    expected-insertions: 10000000
+    false-positive-rate: 0.001
+
+  # 缓存预热配置
+  cache:
+    warmup:
+      # 是否启用缓存预热
+      enabled: true
+      # 热门链接预热配置
+      hot-links:
+        limit: 1000
+        cron: "0 0 * * * ?"  # 每小时执行
+      # 最近创建链接预热配置
+      recent:
+        limit: 500
+        cron: "0 0,30 * * * ?"  # 每30分钟执行
+      # 每日预热配置
+      daily:
+        cron: "0 0 2 * * ?"  # 每天凌晨2点执行
+      # 批次大小
+      batch-size: 100
 
 # 日志配置
 logging:
   level:
     com.mooncloud.shorturl: DEBUG
-    org.springframework.data.jpa: DEBUG
+    com.baomidou.mybatisplus: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
-# 管理端点配置
+# 监控配置
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus,caches
   endpoint:
     health:
       show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true

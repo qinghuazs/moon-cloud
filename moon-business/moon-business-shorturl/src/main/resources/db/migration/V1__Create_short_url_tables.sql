@@ -1,0 +1,85 @@
+-- 短链接URL系统数据库初始化脚本
+-- 基于参考文档的第一阶段设计（单机版本）
+
+-- 创建数据库
+CREATE DATABASE IF NOT EXISTS shorturl CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE shorturl;
+
+-- 短链接表
+CREATE TABLE IF NOT EXISTS url_mapping (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    short_url VARCHAR(20) NOT NULL UNIQUE COMMENT '短链标识符',
+    original_url TEXT NOT NULL COMMENT '原始URL',
+    url_hash VARCHAR(32) NOT NULL COMMENT 'URL哈希值（用于重复检测）',
+    user_id BIGINT COMMENT '用户ID（可为空，表示游客用户）',
+    click_count BIGINT DEFAULT 0 COMMENT '点击次数',
+    status ENUM('ACTIVE', 'INACTIVE', 'EXPIRED') DEFAULT 'ACTIVE' COMMENT 'URL状态',
+    expires_at DATETIME COMMENT '过期时间',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    title VARCHAR(200) COMMENT '链接标题（用户可自定义）',
+    description VARCHAR(500) COMMENT '备注信息',
+    is_custom BOOLEAN DEFAULT FALSE COMMENT '是否为自定义短链',
+
+    INDEX idx_short_url (short_url),
+    INDEX idx_url_hash (url_hash),
+    INDEX idx_user_id (user_id),
+    INDEX idx_created_at (created_at),
+    INDEX idx_status (status),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='URL映射表';
+
+-- 访问记录表
+CREATE TABLE IF NOT EXISTS url_access_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    short_url VARCHAR(20) NOT NULL COMMENT '短链标识符',
+    ip_address VARCHAR(45) COMMENT 'IP地址',
+    user_agent TEXT COMMENT '用户代理',
+    referer TEXT COMMENT '来源页面',
+    access_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '访问时间',
+    device_type VARCHAR(20) COMMENT '设备类型',
+    browser VARCHAR(50) COMMENT '浏览器',
+    operating_system VARCHAR(50) COMMENT '操作系统',
+
+    INDEX idx_short_url (short_url),
+    INDEX idx_access_time (access_time),
+    INDEX idx_ip_address (ip_address)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='访问记录表';
+
+-- 创建分区表（按月分区）
+-- 为url_mapping表创建按月分区
+ALTER TABLE url_mapping
+PARTITION BY RANGE (YEAR(created_at) * 100 + MONTH(created_at)) (
+    PARTITION p202501 VALUES LESS THAN (202502),
+    PARTITION p202502 VALUES LESS THAN (202503),
+    PARTITION p202503 VALUES LESS THAN (202504),
+    PARTITION p202504 VALUES LESS THAN (202505),
+    PARTITION p202505 VALUES LESS THAN (202506),
+    PARTITION p202506 VALUES LESS THAN (202507),
+    PARTITION p202507 VALUES LESS THAN (202508),
+    PARTITION p202508 VALUES LESS THAN (202509),
+    PARTITION p202509 VALUES LESS THAN (202510),
+    PARTITION p202510 VALUES LESS THAN (202511),
+    PARTITION p202511 VALUES LESS THAN (202512),
+    PARTITION p202512 VALUES LESS THAN (202513),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+);
+
+-- 为url_access_log表创建按月分区
+ALTER TABLE url_access_log
+PARTITION BY RANGE (YEAR(access_time) * 100 + MONTH(access_time)) (
+    PARTITION p202501 VALUES LESS THAN (202502),
+    PARTITION p202502 VALUES LESS THAN (202503),
+    PARTITION p202503 VALUES LESS THAN (202504),
+    PARTITION p202504 VALUES LESS THAN (202505),
+    PARTITION p202505 VALUES LESS THAN (202506),
+    PARTITION p202506 VALUES LESS THAN (202507),
+    PARTITION p202507 VALUES LESS THAN (202508),
+    PARTITION p202508 VALUES LESS THAN (202509),
+    PARTITION p202509 VALUES LESS THAN (202510),
+    PARTITION p202510 VALUES LESS THAN (202511),
+    PARTITION p202511 VALUES LESS THAN (202512),
+    PARTITION p202512 VALUES LESS THAN (202513),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+);

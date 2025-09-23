@@ -1,12 +1,9 @@
 package com.mooncloud.shorturl.entity;
 
+import com.baomidou.mybatisplus.annotation.*;
 import com.mooncloud.shorturl.enums.UrlStatus;
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
@@ -20,99 +17,83 @@ import java.util.Date;
  * 
  * @author mooncloud
  */
-@Entity
-@Table(name = "url_mapping", indexes = {
-    @Index(name = "idx_short_url", columnList = "shortUrl", unique = true),
-    @Index(name = "idx_url_hash", columnList = "urlHash"),
-    @Index(name = "idx_user_id", columnList = "userId"),
-    @Index(name = "idx_created_at", columnList = "createdAt"),
-    @Index(name = "idx_status", columnList = "status"),
-    @Index(name = "idx_expires_at", columnList = "expiresAt")
-})
+@TableName("url_mapping")
 @Data
 @EqualsAndHashCode(callSuper = false)
-@EntityListeners(AuditingEntityListener.class)
 public class UrlMappingEntity {
     
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
     
     /**
      * 短链标识符
      */
-    @Column(name = "short_url", nullable = false, unique = true, length = 20)
+    @TableField("short_url")
     private String shortUrl;
     
     /**
      * 原始URL
      */
-    @Column(name = "original_url", nullable = false, length = 2048)
+    @TableField("original_url")
     private String originalUrl;
     
     /**
      * URL哈希值（用于重复检测）
      */
-    @Column(name = "url_hash", nullable = false, length = 32)
+    @TableField("url_hash")
     private String urlHash;
     
     /**
      * 用户ID（可为空，表示游客用户）
      */
-    @Column(name = "user_id")
+    @TableField("user_id")
     private Long userId;
     
     /**
      * 点击次数
      */
-    @Column(name = "click_count", nullable = false)
+    @TableField("click_count")
     private Long clickCount = 0L;
     
     /**
      * URL状态
      */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @TableField("status")
     private UrlStatus status = UrlStatus.ACTIVE;
     
     /**
      * 过期时间
      */
-    @Column(name = "expires_at")
-    @Temporal(TemporalType.TIMESTAMP)
+    @TableField("expires_at")
     private Date expiresAt;
     
     /**
      * 创建时间
      */
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
+    @TableField(value = "created_at", fill = FieldFill.INSERT)
     private Date createdAt;
     
     /**
      * 更新时间
      */
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
+    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private Date updatedAt;
     
     /**
      * 链接标题（用户可自定义）
      */
-    @Column(name = "title", length = 200)
+    @TableField("title")
     private String title;
     
     /**
      * 备注信息
      */
-    @Column(name = "description", length = 500)
+    @TableField("description")
     private String description;
     
     /**
      * 是否为自定义短链
      */
-    @Column(name = "is_custom", nullable = false)
+    @TableField("is_custom")
     private Boolean isCustom = false;
 }

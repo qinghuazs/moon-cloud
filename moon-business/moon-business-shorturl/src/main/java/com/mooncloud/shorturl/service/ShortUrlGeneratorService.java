@@ -1,10 +1,13 @@
 package com.mooncloud.shorturl.service;
 
 import com.google.common.hash.BloomFilter;
+import com.mooncloud.shorturl.dto.CreateShortUrlRequest;
 import com.mooncloud.shorturl.dto.ShortUrlResult;
+import com.mooncloud.shorturl.exception.BusinessException;
 import com.mooncloud.shorturl.entity.UrlMappingEntity;
 import com.mooncloud.shorturl.enums.UrlStatus;
-import com.mooncloud.shorturl.repository.UrlMappingRepository;
+import com.mooncloud.shorturl.mapper.UrlMappingMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mooncloud.shorturl.util.Base62Encoder;
 import com.mooncloud.shorturl.util.SnowflakeIdGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,8 @@ import org.springframework.util.StringUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
@@ -39,7 +44,7 @@ public class ShortUrlGeneratorService {
     private SnowflakeIdGenerator snowflakeIdGenerator;
     
     @Autowired
-    private UrlMappingRepository urlMappingRepository;
+    private UrlMappingMapper urlMappingMapper;
     
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -51,10 +56,80 @@ public class ShortUrlGeneratorService {
     private static final String SHORT_URL_PREFIX = "short_url:";
     private static final int DEFAULT_SHORT_URL_LENGTH = 6;
     private static final int MAX_RETRY_COUNT = 3;
-    
+
+    /**
+     * 创建短链
+     *
+     * @param request 创建短链请求
+     * @return 短码
+     */
+    @Transactional
+    public String createShortUrl(CreateShortUrlRequest request) {
+        try {
+            // 1. URL标准化
+            String normalizedUrl = normalizeUrl(request.getOriginalUrl());
+
+            // 2. 检查是否已存在
+            if (request.isCheckExisting()) {
+                String urlHash = DigestUtils.md5Hex(normalizedUrl);
+                Optional<UrlMappingEntity> existingMapping = checkExistingUrl(urlHash);
+                if (existingMapping.isPresent()) {
+                    return existingMapping.get().getShortUrl();
+                }
+            }
+
+            // 3. 生成短链
+            String shortCode;
+            if (StringUtils.hasText(request.getCustomCode())) {
+                // 自定义短码
+                shortCode = generateCustomShortUrl(request.getCustomCode());
+            } else {
+                // 系统生成短码
+                shortCode = generateSystemShortUrl();
+            }
+
+            // 4. 保存映射关系
+            UrlMappingEntity mapping = createUrlMapping(shortCode, normalizedUrl, request);
+            urlMappingMapper.insert(mapping);
+
+            // 5. 更新缓存和布隆过滤器
+            updateCache(shortCode, normalizedUrl);
+            urlBloomFilter.put(normalizedUrl);
+
+            log.info("短链生成成功: {} -> {}", normalizedUrl, shortCode);
+            return shortCode;
+
+        } catch (Exception e) {
+            if (e instanceof BusinessException) {
+                throw e;
+            }
+            log.error("短链生成失败: {}", e.getMessage(), e);
+            throw new BusinessException("短链生成失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 创建URL映射实体
+     */
+    private UrlMappingEntity createUrlMapping(String shortCode, String normalizedUrl, CreateShortUrlRequest request) {
+        UrlMappingEntity mapping = new UrlMappingEntity();
+        mapping.setShortUrl(shortCode);
+        mapping.setOriginalUrl(normalizedUrl);
+        mapping.setUrlHash(DigestUtils.md5Hex(normalizedUrl));
+        mapping.setUserId(request.getUserId());
+        mapping.setCreatedAt(new Date());
+        mapping.setExpiresAt(calculateExpiryDate(request.getExpireTime()));
+        mapping.setClickCount(0L);
+        mapping.setStatus(UrlStatus.ACTIVE);
+        mapping.setIsCustom(StringUtils.hasText(request.getCustomCode()));
+        mapping.setTitle(request.getTitle());
+        mapping.setDescription(request.getDescription());
+        return mapping;
+    }
+
     /**
      * 生成短链
-     * 
+     *
      * @param originalUrl 原始URL
      * @param customShortUrl 自定义短链（可为空）
      * @param userId 用户ID（可为空，表示游客用户）
@@ -94,8 +169,8 @@ public class ShortUrlGeneratorService {
             mapping.setClickCount(0L);
             mapping.setStatus(UrlStatus.ACTIVE);
             mapping.setIsCustom(StringUtils.hasText(customShortUrl));
-            
-            urlMappingRepository.save(mapping);
+
+            urlMappingMapper.insert(mapping);
             
             // 5. 更新缓存和布隆过滤器
             updateCache(shortUrl, normalizedUrl);
@@ -126,11 +201,15 @@ public class ShortUrlGeneratorService {
         String cacheKey = URL_HASH_PREFIX + urlHash;
         String cachedShortUrl = (String) redisTemplate.opsForValue().get(cacheKey);
         if (StringUtils.hasText(cachedShortUrl)) {
-            return urlMappingRepository.findByShortUrl(cachedShortUrl);
+            QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq("short_url", cachedShortUrl);
+            return Optional.ofNullable(urlMappingMapper.selectOne(wrapper));
         }
         
         // 3. 数据库查询
-        return urlMappingRepository.findByUrlHash(urlHash);
+        QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("url_hash", urlHash);
+        return Optional.ofNullable(urlMappingMapper.selectOne(wrapper));
     }
     
     /**
@@ -149,7 +228,9 @@ public class ShortUrlGeneratorService {
                 String shortUrl = base62Encoder.encodeWithPadding(id, DEFAULT_SHORT_URL_LENGTH);
                 
                 // 检查冲突
-                if (!urlMappingRepository.existsByShortUrl(shortUrl)) {
+                QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+                wrapper.eq("short_url", shortUrl);
+                if (urlMappingMapper.selectCount(wrapper) == 0) {
                     return shortUrl;
                 }
                 
@@ -173,19 +254,21 @@ public class ShortUrlGeneratorService {
     private String generateCustomShortUrl(String customShortUrl) {
         // 1. 验证自定义短链格式
         if (!isValidCustomShortUrl(customShortUrl)) {
-            throw new IllegalArgumentException("自定义短链格式不正确");
+            throw new BusinessException("自定义短链格式不正确");
         }
-        
+
         // 2. 检查是否已被使用
-        if (urlMappingRepository.existsByShortUrl(customShortUrl)) {
-            throw new IllegalArgumentException("自定义短链已被使用");
+        QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("short_url", customShortUrl);
+        if (urlMappingMapper.selectCount(wrapper) > 0) {
+            throw new BusinessException("自定义短链已被使用");
         }
-        
+
         // 3. 检查是否为保留字
         if (isReservedShortUrl(customShortUrl)) {
-            throw new IllegalArgumentException("自定义短链为系统保留字");
+            throw new BusinessException("自定义短链为系统保留字");
         }
-        
+
         return customShortUrl;
     }
     
@@ -251,20 +334,34 @@ public class ShortUrlGeneratorService {
             return normalizedUrl;
             
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("URL格式错误: " + url);
+            throw new BusinessException("URL格式错误: " + url);
         }
     }
     
     /**
      * 计算过期时间
-     * 
+     *
+     * @param expireTime 指定的过期时间
      * @return 过期时间
      */
-    private Date calculateExpiryDate() {
+    private Date calculateExpiryDate(LocalDateTime expireTime) {
+        if (expireTime != null) {
+            return Date.from(expireTime.atZone(ZoneId.systemDefault()).toInstant());
+        }
+
         // 默认1年过期
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.YEAR, 1);
         return calendar.getTime();
+    }
+
+    /**
+     * 计算过期时间
+     *
+     * @return 过期时间
+     */
+    private Date calculateExpiryDate() {
+        return calculateExpiryDate(null);
     }
     
     /**

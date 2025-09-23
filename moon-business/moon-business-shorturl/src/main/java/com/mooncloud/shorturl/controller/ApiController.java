@@ -1,26 +1,29 @@
 package com.mooncloud.shorturl.controller;
 
-import com.mooncloud.shorturl.dto.ShortUrlResult;
+import com.mooncloud.shorturl.dto.ApiResponse;
+import com.mooncloud.shorturl.dto.CreateShortUrlRequest;
+import com.mooncloud.shorturl.dto.CreateShortUrlResponse;
 import com.mooncloud.shorturl.entity.UrlAccessLogEntity;
 import com.mooncloud.shorturl.entity.UrlMappingEntity;
-import com.mooncloud.shorturl.repository.UrlAccessLogRepository;
-import com.mooncloud.shorturl.repository.UrlMappingRepository;
+import com.mooncloud.shorturl.exception.NotFoundException;
+import com.mooncloud.shorturl.mapper.UrlAccessLogMapper;
+import com.mooncloud.shorturl.mapper.UrlMappingMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mooncloud.shorturl.service.ShortUrlGeneratorService;
 import com.mooncloud.shorturl.service.ShortUrlRedirectService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +36,9 @@ import java.util.Optional;
  * @author mooncloud
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 @Slf4j
+@Validated
 public class ApiController {
     
     @Autowired
@@ -44,95 +48,63 @@ public class ApiController {
     private ShortUrlRedirectService redirectService;
     
     @Autowired
-    private UrlMappingRepository urlMappingRepository;
-    
+    private UrlMappingMapper urlMappingMapper;
+
     @Autowired
-    private UrlAccessLogRepository accessLogRepository;
+    private UrlAccessLogMapper accessLogMapper;
     
     @Value("${app.domain:http://localhost:8080}")
     private String appDomain;
     
     /**
      * 生成短链API
-     * 
+     *
      * @param request 请求体
      * @return 生成结果
      */
-    @PostMapping("/generate")
-    public ResponseEntity<Map<String, Object>> generateShortUrl(@RequestBody Map<String, String> request) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            String originalUrl = request.get("originalUrl");
-            String customShortUrl = request.get("customShortUrl");
-            String userId = request.get("userId");
-            
-            // 验证输入
-            if (!StringUtils.hasText(originalUrl)) {
-                response.put("success", false);
-                response.put("message", "请输入有效的URL");
-                return ResponseEntity.badRequest().body(response);
-            }
-            
-            // 添加协议前缀（如果没有）
-            if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
-                originalUrl = "https://" + originalUrl;
-            }
-            
-            // 生成短链
-            Long userIdLong = StringUtils.hasText(userId) ? Long.parseLong(userId) : null;
-            ShortUrlResult result = generatorService.generateShortUrl(originalUrl, customShortUrl, userIdLong);
-            
-            response.put("success", result.isSuccess());
-            response.put("message", result.getMessage());
-            
-            if (result.isSuccess()) {
-                response.put("shortUrl", result.getShortUrl());
-                response.put("fullShortUrl", appDomain + "/" + result.getShortUrl());
-                response.put("originalUrl", originalUrl);
-                response.put("isNew", result.isNew());
-            }
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            log.error("API生成短链异常: {}", e.getMessage(), e);
-            response.put("success", false);
-            response.put("message", "系统异常，请稍后重试");
-            return ResponseEntity.internalServerError().body(response);
+    @PostMapping("/shorturl")
+    public ApiResponse<CreateShortUrlResponse> createShortUrl(@Valid @RequestBody CreateShortUrlRequest request) {
+        // 添加协议前缀（如果没有）
+        String originalUrl = request.getOriginalUrl();
+        if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
+            originalUrl = "https://" + originalUrl;
+            request.setOriginalUrl(originalUrl);
         }
+
+        // 生成短链
+        String shortCode = generatorService.createShortUrl(request);
+
+        // 构建响应
+        CreateShortUrlResponse response = CreateShortUrlResponse.builder()
+                .shortCode(shortCode)
+                .shortUrl(appDomain + "/" + shortCode)
+                .originalUrl(originalUrl)
+                .isNew(true) // TODO: 从service返回
+                .createdTime(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                .build();
+
+        return ApiResponse.success(response);
     }
     
     /**
      * 获取原始URL API
-     * 
-     * @param shortUrl 短链标识符
+     *
+     * @param shortCode 短链标识符
      * @return 原始URL
      */
-    @GetMapping("/resolve/{shortUrl}")
-    public ResponseEntity<Map<String, Object>> resolveShortUrl(@PathVariable String shortUrl) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            String originalUrl = redirectService.getOriginalUrlForPreview(shortUrl);
-            
-            if (originalUrl != null) {
-                response.put("success", true);
-                response.put("originalUrl", originalUrl);
-                response.put("shortUrl", shortUrl);
-            } else {
-                response.put("success", false);
-                response.put("message", "短链不存在或已失效");
-            }
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            log.error("API解析短链异常: {}", e.getMessage(), e);
-            response.put("success", false);
-            response.put("message", "系统异常");
-            return ResponseEntity.internalServerError().body(response);
+    @GetMapping("/shorturl/{shortCode}")
+    public ApiResponse<Map<String, String>> getOriginalUrl(@PathVariable String shortCode) {
+        String originalUrl = redirectService.getOriginalUrlForPreview(shortCode);
+
+        if (originalUrl == null) {
+            throw new NotFoundException("短链不存在或已失效");
         }
+
+        Map<String, String> data = new HashMap<>();
+        data.put("originalUrl", originalUrl);
+        data.put("shortCode", shortCode);
+
+        return ApiResponse.success(data);
     }
     
     /**
@@ -146,7 +118,9 @@ public class ApiController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Optional<UrlMappingEntity> urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
+            QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq("short_url", shortUrl);
+            Optional<UrlMappingEntity> urlMapping = Optional.ofNullable(urlMappingMapper.selectOne(wrapper));
             
             if (urlMapping.isPresent()) {
                 UrlMappingEntity entity = urlMapping.get();
@@ -161,20 +135,25 @@ public class ApiController {
                 response.put("expiresAt", entity.getExpiresAt());
                 
                 // 访问统计
-                Long totalAccess = accessLogRepository.countByShortUrl(shortUrl);
+                QueryWrapper<UrlAccessLogEntity> accessWrapper = new QueryWrapper<>();
+                accessWrapper.eq("short_url", shortUrl);
+                Long totalAccess = accessLogMapper.selectCount(accessWrapper);
                 Date startOfDay = Date.from(LocalDateTime.now().toLocalDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
                 Date now = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
-                Long todayAccess = accessLogRepository.countByShortUrlAndAccessTimeBetween(
-                    shortUrl, 
-                    startOfDay,
-                    now
-                );
+                QueryWrapper<UrlAccessLogEntity> todayWrapper = new QueryWrapper<>();
+                todayWrapper.eq("short_url", shortUrl)
+                           .between("access_time", startOfDay, now);
+                Long todayAccess = accessLogMapper.selectCount(todayWrapper);
                 
                 response.put("totalAccess", totalAccess);
                 response.put("todayAccess", todayAccess);
                 
                 // 最近访问记录
-                List<UrlAccessLogEntity> recentAccess = accessLogRepository.findTop10ByShortUrlOrderByAccessTimeDesc(shortUrl);
+                QueryWrapper<UrlAccessLogEntity> recentWrapper = new QueryWrapper<>();
+                recentWrapper.eq("short_url", shortUrl)
+                            .orderByDesc("access_time")
+                            .last("LIMIT 10");
+                List<UrlAccessLogEntity> recentAccess = accessLogMapper.selectList(recentWrapper);
                 response.put("recentAccess", recentAccess);
                 
             } else {
@@ -207,14 +186,17 @@ public class ApiController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
             Long userIdLong = Long.parseLong(userId);
-            Page<UrlMappingEntity> urlPage = urlMappingRepository.findByUserId(userIdLong, pageable);
-            
+            QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq("user_id", userIdLong)
+                  .orderByDesc("created_at");
+            Page<UrlMappingEntity> pageParam = new Page<>(page + 1, size);
+            Page<UrlMappingEntity> urlPage = urlMappingMapper.selectPage(pageParam, wrapper);
+
             response.put("success", true);
-            response.put("content", urlPage.getContent());
-            response.put("totalElements", urlPage.getTotalElements());
-            response.put("totalPages", urlPage.getTotalPages());
+            response.put("content", urlPage.getRecords());
+            response.put("totalElements", urlPage.getTotal());
+            response.put("totalPages", urlPage.getPages());
             response.put("currentPage", page);
             response.put("pageSize", size);
             
@@ -239,24 +221,22 @@ public class ApiController {
         
         try {
             // 总短链数
-            long totalUrls = urlMappingRepository.count();
+            long totalUrls = urlMappingMapper.selectCount(null);
             
             // 今日新增
             Date startOfDay = Date.from(LocalDateTime.now().toLocalDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
             Date now = Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
-            long todayUrls = urlMappingRepository.countByCreatedAtBetween(
-                startOfDay,
-                now
-            );
+            QueryWrapper<UrlMappingEntity> todayUrlsWrapper = new QueryWrapper<>();
+            todayUrlsWrapper.between("created_at", startOfDay, now);
+            long todayUrls = urlMappingMapper.selectCount(todayUrlsWrapper);
             
             // 总访问次数
-            long totalAccess = accessLogRepository.count();
-            
+            long totalAccess = accessLogMapper.selectCount(null);
+
             // 今日访问次数
-            long todayAccess = accessLogRepository.countByAccessTimeBetween(
-                startOfDay,
-                now
-            );
+            QueryWrapper<UrlAccessLogEntity> todayAccessWrapper = new QueryWrapper<>();
+            todayAccessWrapper.between("access_time", startOfDay, now);
+            long todayAccess = accessLogMapper.selectCount(todayAccessWrapper);
             
             response.put("success", true);
             response.put("totalUrls", totalUrls);

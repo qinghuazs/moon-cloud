@@ -3,14 +3,12 @@ package com.mooncloud.shorturl.controller;
 import com.mooncloud.shorturl.entity.UrlMappingEntity;
 import com.mooncloud.shorturl.entity.UrlAccessLogEntity;
 import com.mooncloud.shorturl.enums.UrlStatus;
-import com.mooncloud.shorturl.repository.UrlMappingRepository;
-import com.mooncloud.shorturl.repository.UrlAccessLogRepository;
+import com.mooncloud.shorturl.mapper.UrlMappingMapper;
+import com.mooncloud.shorturl.mapper.UrlAccessLogMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,10 +31,10 @@ import java.util.Optional;
 public class AdminController {
     
     @Autowired
-    private UrlMappingRepository urlMappingRepository;
-    
+    private UrlMappingMapper urlMappingMapper;
+
     @Autowired
-    private UrlAccessLogRepository urlAccessLogRepository;
+    private UrlAccessLogMapper urlAccessLogMapper;
     
     /**
      * 管理首页
@@ -44,9 +42,11 @@ public class AdminController {
     @GetMapping
     public String adminHome(Model model) {
         // 获取统计信息
-        long totalUrls = urlMappingRepository.count();
-        long activeUrls = urlMappingRepository.countByStatus(UrlStatus.ACTIVE);
-        long totalClicks = urlAccessLogRepository.count();
+        long totalUrls = urlMappingMapper.selectCount(null);
+        QueryWrapper<UrlMappingEntity> activeWrapper = new QueryWrapper<>();
+        activeWrapper.eq("status", UrlStatus.ACTIVE);
+        long activeUrls = urlMappingMapper.selectCount(activeWrapper);
+        long totalClicks = urlAccessLogMapper.selectCount(null);
         
         model.addAttribute("totalUrls", totalUrls);
         model.addAttribute("activeUrls", activeUrls);
@@ -117,7 +117,9 @@ public class AdminController {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            Optional<UrlMappingEntity> urlOpt = urlMappingRepository.findByShortUrl(shortUrl);
+            QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq("short_url", shortUrl);
+            Optional<UrlMappingEntity> urlOpt = Optional.ofNullable(urlMappingMapper.selectOne(wrapper));
             if (urlOpt.isEmpty()) {
                 result.put("success", false);
                 result.put("message", "短链不存在");
@@ -126,7 +128,7 @@ public class AdminController {
             
             UrlMappingEntity url = urlOpt.get();
             url.setStatus(status);
-            urlMappingRepository.save(url);
+            urlMappingMapper.updateById(url);
             
             result.put("success", true);
             result.put("message", "状态更新成功");
@@ -152,7 +154,9 @@ public class AdminController {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            Optional<UrlMappingEntity> urlOpt = urlMappingRepository.findByShortUrl(shortUrl);
+            QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq("short_url", shortUrl);
+            Optional<UrlMappingEntity> urlOpt = Optional.ofNullable(urlMappingMapper.selectOne(wrapper));
             if (urlOpt.isEmpty()) {
                 result.put("success", false);
                 result.put("message", "短链不存在");
@@ -162,7 +166,7 @@ public class AdminController {
             // 软删除：更新状态为已删除
             UrlMappingEntity url = urlOpt.get();
             url.setStatus(UrlStatus.DELETED);
-            urlMappingRepository.save(url);
+            urlMappingMapper.updateById(url);
             
             result.put("success", true);
             result.put("message", "删除成功");

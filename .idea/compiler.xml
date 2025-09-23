@@ -20,7 +20,6 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
         </processorPath>
         <module name="moon-spring-boot-starter-response" />
       </profile>
@@ -30,7 +29,6 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
         </processorPath>
         <module name="moon-spring-boot-starter-threadpool" />
       </profile>
@@ -39,7 +37,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="moon-business-user" />
@@ -58,7 +55,7 @@
       <module name="moon-business-gateway" options="" />
       <module name="moon-business-gps" options="" />
       <module name="moon-business-leetcode" options="" />
-      <module name="moon-business-shorturl" options="" />
+      <module name="moon-business-shorturl" options="-proc:full" />
       <module name="moon-business-user" options="-parameters" />
       <module name="moon-business-web-drift-bottle" options="" />
       <module name="moon-cloud" options="" />

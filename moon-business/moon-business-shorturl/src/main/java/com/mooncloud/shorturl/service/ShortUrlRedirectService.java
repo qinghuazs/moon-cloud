@@ -3,8 +3,11 @@ package com.mooncloud.shorturl.service;
 import com.mooncloud.shorturl.entity.UrlAccessLogEntity;
 import com.mooncloud.shorturl.entity.UrlMappingEntity;
 import com.mooncloud.shorturl.enums.UrlStatus;
-import com.mooncloud.shorturl.repository.UrlAccessLogRepository;
-import com.mooncloud.shorturl.repository.UrlMappingRepository;
+import com.mooncloud.shorturl.exception.ExpiredException;
+import com.mooncloud.shorturl.exception.NotFoundException;
+import com.mooncloud.shorturl.mapper.UrlAccessLogMapper;
+import com.mooncloud.shorturl.mapper.UrlMappingMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -27,10 +30,10 @@ import java.util.concurrent.TimeUnit;
 public class ShortUrlRedirectService {
     
     @Autowired
-    private UrlMappingRepository urlMappingRepository;
-    
+    private UrlMappingMapper urlMappingMapper;
+
     @Autowired
-    private UrlAccessLogRepository urlAccessLogRepository;
+    private UrlAccessLogMapper urlAccessLogMapper;
     
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -46,48 +49,48 @@ public class ShortUrlRedirectService {
      */
     @Transactional
     public String resolveShortUrl(String shortUrl, HttpServletRequest request) {
-        try {
-            // 1. 从缓存获取原始URL
-            String originalUrl = getOriginalUrlFromCache(shortUrl);
-            if (StringUtils.hasText(originalUrl)) {
-                // 异步记录访问日志
-                recordAccessLogAsync(shortUrl, request);
-                // 异步增加点击次数
-                incrementClickCountAsync(shortUrl);
-                return originalUrl;
-            }
-            
-            // 2. 从数据库查询
-            Optional<UrlMappingEntity> mappingOpt = urlMappingRepository.findByShortUrl(shortUrl);
-            if (mappingOpt.isEmpty()) {
-                log.warn("短链不存在: {}", shortUrl);
-                return null;
-            }
-            
-            UrlMappingEntity mapping = mappingOpt.get();
-            
-            // 3. 检查URL状态
-            if (!isUrlAccessible(mapping)) {
-                log.warn("短链不可访问: {}, 状态: {}", shortUrl, mapping.getStatus());
-                return null;
-            }
-            
-            // 4. 更新缓存
-            updateCache(shortUrl, mapping.getOriginalUrl());
-            
-            // 5. 记录访问日志
-            recordAccessLog(shortUrl, request);
-            
-            // 6. 增加点击次数
-            urlMappingRepository.incrementClickCount(shortUrl);
-            
-            log.info("短链解析成功: {} -> {}", shortUrl, mapping.getOriginalUrl());
-            return mapping.getOriginalUrl();
-            
-        } catch (Exception e) {
-            log.error("短链解析失败: {}", e.getMessage(), e);
-            return null;
+        // 1. 从缓存获取原始URL
+        String originalUrl = getOriginalUrlFromCache(shortUrl);
+        if (StringUtils.hasText(originalUrl)) {
+            // 异步记录访问日志
+            recordAccessLogAsync(shortUrl, request);
+            // 异步增加点击次数
+            incrementClickCountAsync(shortUrl);
+            return originalUrl;
         }
+
+        // 2. 从数据库查询
+        QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("short_url", shortUrl);
+        Optional<UrlMappingEntity> mappingOpt = Optional.ofNullable(urlMappingMapper.selectOne(wrapper));
+        if (mappingOpt.isEmpty()) {
+            log.warn("短链不存在: {}", shortUrl);
+            throw new NotFoundException("短链不存在");
+        }
+
+        UrlMappingEntity mapping = mappingOpt.get();
+
+        // 3. 检查URL状态
+        if (!isUrlAccessible(mapping)) {
+            log.warn("短链不可访问: {}, 状态: {}", shortUrl, mapping.getStatus());
+            if (mapping.getStatus() == UrlStatus.EXPIRED) {
+                throw new ExpiredException("短链已过期");
+            } else {
+                throw new NotFoundException("短链不可访问");
+            }
+        }
+
+        // 4. 更新缓存
+        updateCache(shortUrl, mapping.getOriginalUrl());
+
+        // 5. 记录访问日志
+        recordAccessLog(shortUrl, request);
+
+        // 6. 增加点击次数
+        urlMappingMapper.incrementClickCount(shortUrl);
+
+        log.info("短链解析成功: {} -> {}", shortUrl, mapping.getOriginalUrl());
+        return mapping.getOriginalUrl();
     }
     
     /**
@@ -122,7 +125,7 @@ public class ShortUrlRedirectService {
         if (mapping.getExpiresAt() != null && mapping.getExpiresAt().before(new Date())) {
             // 更新状态为过期
             mapping.setStatus(UrlStatus.EXPIRED);
-            urlMappingRepository.save(mapping);
+            urlMappingMapper.updateById(mapping);
             return false;
         }
         
@@ -162,7 +165,7 @@ public class ShortUrlRedirectService {
             // 解析用户代理信息
             parseUserAgent(accessLog, request.getHeader("User-Agent"));
             
-            urlAccessLogRepository.save(accessLog);
+            urlAccessLogMapper.insert(accessLog);
             
         } catch (Exception e) {
             log.error("访问日志记录失败: {}", e.getMessage());
@@ -188,7 +191,7 @@ public class ShortUrlRedirectService {
      */
     private void incrementClickCountAsync(String shortUrl) {
         try {
-            urlMappingRepository.incrementClickCount(shortUrl);
+            urlMappingMapper.incrementClickCount(shortUrl);
         } catch (Exception e) {
             log.error("点击次数更新失败: {}", e.getMessage());
         }
@@ -292,7 +295,9 @@ public class ShortUrlRedirectService {
             }
             
             // 2. 从数据库查询
-            Optional<UrlMappingEntity> mappingOpt = urlMappingRepository.findByShortUrl(shortUrl);
+            QueryWrapper<UrlMappingEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq("short_url", shortUrl);
+            Optional<UrlMappingEntity> mappingOpt = Optional.ofNullable(urlMappingMapper.selectOne(wrapper));
             if (mappingOpt.isEmpty()) {
                 log.warn("短链不存在: {}", shortUrl);
                 return null;

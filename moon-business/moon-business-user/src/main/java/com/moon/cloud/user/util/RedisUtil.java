@@ -4,9 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.Set;
-import java.util.Collection;
 
 /**
  * Redis工具类
@@ -302,5 +301,355 @@ public class RedisUtil {
     public Boolean unlockIp(String ip) {
         String key = IP_LOCK_PREFIX + ip;
         return delete(key);
+    }
+
+    // ==================== Hash操作相关方法 ====================
+
+    /**
+     * Hash设置值
+     */
+    public void hSet(String key, String hashKey, Object value) {
+        redisTemplate.opsForHash().put(key, hashKey, value);
+    }
+
+    /**
+     * Hash批量设置值
+     */
+    public void hSetAll(String key, Map<String, Object> map) {
+        redisTemplate.opsForHash().putAll(key, map);
+    }
+
+    /**
+     * Hash获取值
+     */
+    public Object hGet(String key, String hashKey) {
+        return redisTemplate.opsForHash().get(key, hashKey);
+    }
+
+    /**
+     * Hash获取所有键值对
+     */
+    public Map<Object, Object> hGetAll(String key) {
+        return redisTemplate.opsForHash().entries(key);
+    }
+
+    /**
+     * Hash删除字段
+     */
+    public Long hDelete(String key, Object... hashKeys) {
+        return redisTemplate.opsForHash().delete(key, hashKeys);
+    }
+
+    /**
+     * Hash判断字段是否存在
+     */
+    public Boolean hExists(String key, String hashKey) {
+        return redisTemplate.opsForHash().hasKey(key, hashKey);
+    }
+
+    /**
+     * Hash获取所有字段
+     */
+    public Set<Object> hKeys(String key) {
+        return redisTemplate.opsForHash().keys(key);
+    }
+
+    /**
+     * Hash获取字段数量
+     */
+    public Long hSize(String key) {
+        return redisTemplate.opsForHash().size(key);
+    }
+
+    /**
+     * Hash递增
+     */
+    public Long hIncrement(String key, String hashKey, long delta) {
+        return redisTemplate.opsForHash().increment(key, hashKey, delta);
+    }
+
+    // ==================== List操作相关方法 ====================
+
+    /**
+     * List左侧推入
+     */
+    public Long lLeftPush(String key, Object value) {
+        return redisTemplate.opsForList().leftPush(key, value);
+    }
+
+    /**
+     * List右侧推入
+     */
+    public Long lRightPush(String key, Object value) {
+        return redisTemplate.opsForList().rightPush(key, value);
+    }
+
+    /**
+     * List左侧弹出
+     */
+    public Object lLeftPop(String key) {
+        return redisTemplate.opsForList().leftPop(key);
+    }
+
+    /**
+     * List右侧弹出
+     */
+    public Object lRightPop(String key) {
+        return redisTemplate.opsForList().rightPop(key);
+    }
+
+    /**
+     * List获取范围内的元素
+     */
+    public List<Object> lRange(String key, long start, long end) {
+        return redisTemplate.opsForList().range(key, start, end);
+    }
+
+    /**
+     * List获取长度
+     */
+    public Long lSize(String key) {
+        return redisTemplate.opsForList().size(key);
+    }
+
+    /**
+     * List根据索引获取元素
+     */
+    public Object lIndex(String key, long index) {
+        return redisTemplate.opsForList().index(key, index);
+    }
+
+    /**
+     * List根据索引设置元素
+     */
+    public void lSet(String key, long index, Object value) {
+        redisTemplate.opsForList().set(key, index, value);
+    }
+
+    /**
+     * List移除元素
+     */
+    public Long lRemove(String key, long count, Object value) {
+        return redisTemplate.opsForList().remove(key, count, value);
+    }
+
+    // ==================== Set操作相关方法 ====================
+
+    /**
+     * Set添加元素
+     */
+    public Long sAdd(String key, Object... values) {
+        return redisTemplate.opsForSet().add(key, values);
+    }
+
+    /**
+     * Set移除元素
+     */
+    public Long sRemove(String key, Object... values) {
+        return redisTemplate.opsForSet().remove(key, values);
+    }
+
+    /**
+     * Set判断元素是否存在
+     */
+    public Boolean sIsMember(String key, Object value) {
+        return redisTemplate.opsForSet().isMember(key, value);
+    }
+
+    /**
+     * Set获取所有元素
+     */
+    public Set<Object> sMembers(String key) {
+        return redisTemplate.opsForSet().members(key);
+    }
+
+    /**
+     * Set获取元素数量
+     */
+    public Long sSize(String key) {
+        return redisTemplate.opsForSet().size(key);
+    }
+
+    /**
+     * Set随机获取元素
+     */
+    public Object sRandomMember(String key) {
+        return redisTemplate.opsForSet().randomMember(key);
+    }
+
+    /**
+     * Set随机获取多个元素
+     */
+    public List<Object> sRandomMembers(String key, long count) {
+        return redisTemplate.opsForSet().randomMembers(key, count);
+    }
+
+    // ==================== ZSet操作相关方法 ====================
+
+    /**
+     * ZSet添加元素
+     */
+    public Boolean zAdd(String key, Object value, double score) {
+        return redisTemplate.opsForZSet().add(key, value, score);
+    }
+
+    /**
+     * ZSet移除元素
+     */
+    public Long zRemove(String key, Object... values) {
+        return redisTemplate.opsForZSet().remove(key, values);
+    }
+
+    /**
+     * ZSet获取元素分数
+     */
+    public Double zScore(String key, Object value) {
+        return redisTemplate.opsForZSet().score(key, value);
+    }
+
+    /**
+     * ZSet获取元素排名
+     */
+    public Long zRank(String key, Object value) {
+        return redisTemplate.opsForZSet().rank(key, value);
+    }
+
+    /**
+     * ZSet获取范围内的元素（按分数升序）
+     */
+    public Set<Object> zRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().range(key, start, end);
+    }
+
+    /**
+     * ZSet获取范围内的元素（按分数降序）
+     */
+    public Set<Object> zReverseRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().reverseRange(key, start, end);
+    }
+
+    /**
+     * ZSet根据分数范围获取元素
+     */
+    public Set<Object> zRangeByScore(String key, double min, double max) {
+        return redisTemplate.opsForZSet().rangeByScore(key, min, max);
+    }
+
+    /**
+     * ZSet获取元素数量
+     */
+    public Long zSize(String key) {
+        return redisTemplate.opsForZSet().size(key);
+    }
+
+    /**
+     * ZSet获取分数范围内的元素数量
+     */
+    public Long zCount(String key, double min, double max) {
+        return redisTemplate.opsForZSet().count(key, min, max);
+    }
+
+    // ==================== 分布式锁相关方法 ====================
+
+    private static final String LOCK_PREFIX = "lock:";
+    private static final String LOCK_SUCCESS = "OK";
+    private static final Long LOCK_RELEASE_SUCCESS = 1L;
+
+    /**
+     * 尝试获取分布式锁
+     * @param lockKey 锁的key
+     * @param requestId 请求标识
+     * @param expireTime 过期时间（秒）
+     * @return 是否获取成功
+     */
+    public Boolean tryLock(String lockKey, String requestId, long expireTime) {
+        String key = LOCK_PREFIX + lockKey;
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, requestId, expireTime, TimeUnit.SECONDS);
+        return result != null && result;
+    }
+
+    /**
+     * 尝试获取分布式锁（使用UUID作为请求标识）
+     * @param lockKey 锁的key
+     * @param expireTime 过期时间（秒）
+     * @return 请求标识（用于释放锁），获取失败返回null
+     */
+    public String tryLock(String lockKey, long expireTime) {
+        String requestId = UUID.randomUUID().toString();
+        Boolean success = tryLock(lockKey, requestId, expireTime);
+        return success ? requestId : null;
+    }
+
+    /**
+     * 释放分布式锁
+     * @param lockKey 锁的key
+     * @param requestId 请求标识
+     * @return 是否释放成功
+     */
+    public Boolean releaseLock(String lockKey, String requestId) {
+        String key = LOCK_PREFIX + lockKey;
+        String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+        Object result = redisTemplate.execute(
+            (org.springframework.data.redis.core.script.RedisScript<Long>) 
+            org.springframework.data.redis.core.script.RedisScript.of(script, Long.class),
+            java.util.Collections.singletonList(key),
+            requestId
+        );
+        return LOCK_RELEASE_SUCCESS.equals(result);
+    }
+
+    // ==================== 工具方法 ====================
+
+    /**
+     * 批量检查key是否存在
+     */
+    public Map<String, Boolean> batchHasKey(Collection<String> keys) {
+        Map<String, Boolean> result = new java.util.HashMap<>();
+        for (String key : keys) {
+            result.put(key, hasKey(key));
+        }
+        return result;
+    }
+
+    /**
+     * 批量获取值
+     */
+    public List<Object> batchGet(Collection<String> keys) {
+        return redisTemplate.opsForValue().multiGet(keys);
+    }
+
+    /**
+     * 批量设置值
+     */
+    public void batchSet(Map<String, Object> keyValues) {
+        redisTemplate.opsForValue().multiSet(keyValues);
+    }
+
+    /**
+     * 批量设置值（如果key不存在）
+     */
+    public Boolean batchSetIfAbsent(Map<String, Object> keyValues) {
+        return redisTemplate.opsForValue().multiSetIfAbsent(keyValues);
+    }
+
+    /**
+     * 获取Redis信息
+     */
+    public java.util.Properties getRedisInfo() {
+        return redisTemplate.getConnectionFactory().getConnection().info();
+    }
+
+    /**
+     * 清空当前数据库
+     */
+    public void flushDb() {
+        redisTemplate.getConnectionFactory().getConnection().flushDb();
+    }
+
+    /**
+     * 获取数据库大小
+     */
+    public Long dbSize() {
+        return redisTemplate.getConnectionFactory().getConnection().dbSize();
     }
 }
