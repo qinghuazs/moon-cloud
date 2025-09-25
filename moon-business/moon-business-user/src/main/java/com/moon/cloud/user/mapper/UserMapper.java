@@ -30,6 +30,13 @@ public interface UserMapper extends BaseMapper<User> {
     User selectUserWithRolesByUsername(@Param("username") String username);
 
     /**
+     * 根据用户邮箱查询用户信息（包含角色信息）
+     * @param email
+     * @return
+     */
+    User selectUserWithRolesByEmail(@Param("email") String email);
+
+    /**
      * 根据邮箱查询用户
      *
      * @param email 邮箱

@@ -42,6 +42,16 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     /**
+     * 认证异常
+     */
+    @ExceptionHandler(AuthException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public Result<Void> handleAuthException(AuthException e, HttpServletRequest request) {
+        log.warn("认证异常: {} - {}", request.getRequestURI(), e.getMessage());
+        return Result.error(e.getCode(), e.getMessage());
+    }
+
+    /**
      * 业务异常
      */
     @ExceptionHandler(BusinessException.class)

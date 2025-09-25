@@ -6,6 +6,7 @@ import com.moon.cloud.user.dto.RegisterRequest;
 import com.moon.cloud.user.entity.Permission;
 import com.moon.cloud.user.entity.Role;
 import com.moon.cloud.user.entity.User;
+import com.moon.cloud.user.exception.AuthException;
 import com.moon.cloud.user.mapper.PermissionMapper;
 import com.moon.cloud.user.mapper.RoleMapper;
 import com.moon.cloud.user.mapper.UserMapper;
@@ -13,6 +14,7 @@ import com.moon.cloud.user.service.AuthService;
 import com.moon.cloud.user.service.LoginLogService;
 import com.moon.cloud.user.util.JwtUtil;
 import com.moon.cloud.user.util.RedisUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
  * @author Moon Cloud
  * @since 2024-01-01
  */
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -66,38 +69,38 @@ public class AuthServiceImpl implements AuthService {
     private LoginLogService loginLogService;
 
     @Override
-    public LoginResponse login(String username, String password, String ip, String userAgent) {
+    public LoginResponse login(String email, String password, String ip, String userAgent) {
         // 检查IP是否被锁定
         if (redisUtil.isIpLocked(ip)) {
-            throw new RuntimeException("IP地址已被锁定，请稍后再试");
+            throw AuthException.ipLocked("IP地址已被锁定，请稍后再试");
         }
 
         // 检查登录失败次数
-        Long failCount = redisUtil.getLoginFailureCount(username);
+        Long failCount = redisUtil.getLoginFailureCount(email);
         if (failCount >= 5) {
             // 锁定IP 30分钟
             redisUtil.lockIp(ip, 30, TimeUnit.MINUTES);
-            throw new RuntimeException("登录失败次数过多，IP已被锁定30分钟");
+            throw AuthException.tooManyFailures("登录失败次数过多，IP已被锁定30分钟");
         }
 
         try {
             // 查询用户
-            User user = userMapper.selectUserWithRolesByUsername(username);
+            User user = userMapper.selectUserWithRolesByEmail(email);
             if (user == null) {
-                throw new RuntimeException("用户名或密码错误");
+                throw AuthException.invalidCredentials();
             }
 
             // 检查用户状态
             if (user.getStatus() == 0) {
-                throw new RuntimeException("用户已被禁用");
+                throw AuthException.userDisabled();
             }
 
             // 验证密码
             if (!passwordEncoder.matches(password, user.getPasswordHash())) {
                 // 记录登录失败
-                redisUtil.recordLoginFailure(username);
+                redisUtil.recordLoginFailure(email);
                 loginLogService.recordLoginLog(user.getId(), ip, userAgent, 0); // 0表示失败
-                throw new RuntimeException("用户名或密码错误");
+                throw AuthException.invalidCredentials();
             }
 
             // 生成JWT令牌
@@ -108,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
             userMapper.updateLastLoginTime(user.getId(), LocalDateTime.now());
 
             // 清除登录失败次数
-            redisUtil.clearLoginFailureCount(username);
+            redisUtil.clearLoginFailureCount(email);
 
             // 记录登录成功日志
             loginLogService.recordLoginLog(user.getId(), ip, userAgent, 1); // 1表示成功
@@ -118,8 +121,9 @@ public class AuthServiceImpl implements AuthService {
 
             return new LoginResponse(token, refreshToken);
         } catch (Exception e) {
+            log.error("登录失败", e);
             // 记录登录失败
-            redisUtil.recordLoginFailure(username);
+            redisUtil.recordLoginFailure(email);
             throw e;
         }
     }
@@ -156,13 +160,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse refreshToken(String refreshToken) {
         if (!jwtUtil.validateToken(refreshToken) || !jwtUtil.isRefreshToken(refreshToken)) {
-            throw new RuntimeException("无效的刷新令牌");
+            throw AuthException.invalidToken("无效的刷新令牌");
         }
 
         // 检查刷新令牌是否已被使用（在黑名单中）
         String refreshJti = jwtUtil.getJtiFromToken(refreshToken);
         if (refreshJti != null && redisUtil.isTokenBlacklisted(refreshJti)) {
-            throw new RuntimeException("刷新令牌已被使用或已失效");
+            throw AuthException.invalidToken("刷新令牌已被使用或已失效");
         }
 
         String username = jwtUtil.getUsernameFromToken(refreshToken);
@@ -170,8 +174,11 @@ public class AuthServiceImpl implements AuthService {
 
         // 验证用户是否存在且状态正常
         User user = userMapper.selectUserWithRolesByUsername(username);
-        if (user == null || user.getStatus() == 0) {
-            throw new RuntimeException("用户不存在或已被禁用");
+        if (user == null) {
+            throw AuthException.invalidCredentials();
+        }
+        if (user.getStatus() == 0) {
+            throw AuthException.userDisabled();
         }
 
         // 将旧的刷新令牌加入黑名单
@@ -419,18 +426,18 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse register(RegisterRequest registerRequest, String ip, String userAgent) {
         // 检查用户名是否已存在
         if (userMapper.selectByUsername(registerRequest.getUsername()) != null) {
-            throw new RuntimeException("用户名已存在");
+            throw AuthException.usernameExists();
         }
 
         // 检查邮箱是否已存在
         if (userMapper.selectByEmail(registerRequest.getEmail()) != null) {
-            throw new RuntimeException("邮箱已被注册");
+            throw AuthException.emailExists();
         }
 
         // 检查手机号是否已存在（如果提供了手机号）
         if (registerRequest.getPhone() != null && !registerRequest.getPhone().trim().isEmpty()) {
             if (userMapper.selectByPhone(registerRequest.getPhone()) != null) {
-                throw new RuntimeException("手机号已被注册");
+                throw AuthException.phoneExists();
             }
         }
 

@@ -44,7 +44,7 @@ public class AuthController {
         String userAgent = request.getHeader("User-Agent");
         
         LoginResponse loginResponse = authService.login(
-            loginRequest.getUsername(),
+            loginRequest.getEmail(),
             loginRequest.getPassword(),
             ip,
             userAgent
