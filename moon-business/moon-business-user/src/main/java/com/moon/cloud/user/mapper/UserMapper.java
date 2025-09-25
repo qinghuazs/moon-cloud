@@ -124,4 +124,13 @@ public interface UserMapper extends BaseMapper<User> {
      * @param userId 用户ID
      */
     void assignDefaultRole(@Param("userId") Long userId);
+
+    /**
+     * 搜索用户
+     *
+     * @param page 分页参数
+     * @param keyword 关键字
+     * @return 用户列表
+     */
+    IPage<User> searchUsers(Page<User> page, @Param("keyword") String keyword);
 }

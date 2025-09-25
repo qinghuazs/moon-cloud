@@ -82,6 +82,22 @@ public class User {
     @Schema(description = "邮箱是否已验证")
     private Boolean isEmailVerified;
 
+    @TableField("bio")
+    @Schema(description = "个人简介")
+    private String bio;
+
+    @TableField("gender")
+    @Schema(description = "性别：0-未知，1-男，2-女")
+    private Integer gender;
+
+    @TableField("birthday")
+    @Schema(description = "生日")
+    private String birthday;
+
+    @TableField("address")
+    @Schema(description = "地址")
+    private String address;
+
     @TableField(exist = false)
     @Schema(description = "用户角色列表")
     private List<Role> roles;
@@ -215,6 +231,38 @@ public class User {
 
     public void setIsEmailVerified(Boolean isEmailVerified) {
         this.isEmailVerified = isEmailVerified;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public Integer getGender() {
+        return gender;
+    }
+
+    public void setGender(Integer gender) {
+        this.gender = gender;
+    }
+
+    public String getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(String birthday) {
+        this.birthday = birthday;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     @Override

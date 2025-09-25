@@ -2,7 +2,10 @@ package com.moon.cloud.user.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moon.cloud.user.dto.UserProfileUpdateRequest;
+import com.moon.cloud.user.dto.UserQueryRequest;
 import com.moon.cloud.user.entity.User;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 
@@ -201,4 +204,38 @@ public interface UserService {
      * @return 是否更新成功
      */
     boolean updateLastLoginTime(Long userId);
+
+    /**
+     * 获取当前登录用户
+     *
+     * @param token JWT token
+     * @return 用户信息
+     */
+    User getCurrentUser(String token);
+
+    /**
+     * 更新用户个人资料
+     *
+     * @param token JWT token
+     * @param request 更新请求
+     * @return 更新后的用户信息
+     */
+    User updateUserProfile(String token, UserProfileUpdateRequest request);
+
+    /**
+     * 导出用户数据
+     *
+     * @param request 查询条件
+     * @param response HTTP响应
+     */
+    void exportUsers(UserQueryRequest request, HttpServletResponse response);
+
+    /**
+     * 搜索用户
+     *
+     * @param page 分页参数
+     * @param keyword 关键字
+     * @return 用户分页列表
+     */
+    IPage<User> searchUsers(Page<User> page, String keyword);
 }

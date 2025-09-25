@@ -3,6 +3,8 @@
 .idea/compiler.xml
 .idea/encodings.xml
 
+**/.env*
+
 
 ### IntelliJ IDEA ###
 .idea

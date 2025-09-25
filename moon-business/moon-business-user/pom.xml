@@ -129,6 +129,24 @@
             <artifactId>moon-spring-boot-starter-response</artifactId>
             <scope>compile</scope>
         </dependency>
+
+        <!-- Apache POI for Excel Export -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.4</version>
+        </dependency>
+
+        <!-- Apache Commons Pool2 for Redis Connection Pool -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
     </dependencies>
     
     <build>
@@ -150,6 +168,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.4.1</version>
             </plugin>
         </plugins>
     </build>

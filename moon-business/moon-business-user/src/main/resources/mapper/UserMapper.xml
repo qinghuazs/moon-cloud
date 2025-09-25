@@ -15,6 +15,10 @@
         <result column="google_id" property="googleId" jdbcType="VARCHAR"/>
         <result column="provider_type" property="providerType" jdbcType="VARCHAR"/>
         <result column="is_email_verified" property="isEmailVerified" jdbcType="BOOLEAN"/>
+        <result column="bio" property="bio" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="TINYINT"/>
+        <result column="birthday" property="birthday" jdbcType="VARCHAR"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
         <result column="last_login_at" property="lastLoginAt" jdbcType="TIMESTAMP"/>
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
         <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
@@ -62,23 +66,25 @@
 
     <!-- 分页查询用户列表（包含角色信息） -->
     <select id="selectUserPageWithRoles" resultMap="UserWithRolesResultMap">
-        SELECT 
+        SELECT
             u.id,
             u.username,
-            u.password,
+            u.password_hash,
             u.email,
             u.phone,
-            u.real_name,
             u.nickname,
-            u.avatar,
+            u.avatar_url,
+            u.bio,
             u.gender,
+            u.birthday,
+            u.address,
             u.status,
-            u.remark,
-            u.last_login_time,
-            u.last_login_ip,
-            u.password_update_time,
-            u.created_time,
-            u.updated_time,
+            u.google_id,
+            u.provider_type,
+            u.is_email_verified,
+            u.last_login_at,
+            u.created_at,
+            u.updated_at,
             r.id as role_id,
             r.name as role_name,
             r.code as role_code,
@@ -86,8 +92,8 @@
             r.status as role_status
         FROM sys_user u
         LEFT JOIN sys_user_role ur ON u.id = ur.user_id
-        LEFT JOIN sys_role r ON ur.role_id = r.id AND r.deleted = 0 AND r.status = 1
-        WHERE u.deleted = 0
+        LEFT JOIN sys_role r ON ur.role_id = r.id AND r.status = 1
+        WHERE 1=1
         <if test="username != null and username != ''">
             AND u.username LIKE CONCAT('%', #{username}, '%')
         </if>
@@ -97,34 +103,35 @@
         <if test="status != null">
             AND u.status = #{status}
         </if>
-        ORDER BY u.created_time DESC
+        ORDER BY u.created_at DESC
     </select>
 
     <!-- 根据角色ID查询用户列表 -->
     <select id="selectUsersByRoleId" resultMap="BaseResultMap">
-        SELECT 
+        SELECT
             u.id,
             u.username,
-            u.password,
+            u.password_hash,
             u.email,
             u.phone,
-            u.real_name,
             u.nickname,
-            u.avatar,
+            u.avatar_url,
+            u.bio,
             u.gender,
+            u.birthday,
+            u.address,
             u.status,
-            u.remark,
-            u.last_login_time,
-            u.last_login_ip,
-            u.password_update_time,
-            u.created_time,
-            u.updated_time
+            u.google_id,
+            u.provider_type,
+            u.is_email_verified,
+            u.last_login_at,
+            u.created_at,
+            u.updated_at
         FROM sys_user u
         INNER JOIN sys_user_role ur ON u.id = ur.user_id
         WHERE ur.role_id = #{roleId}
-          AND u.deleted = 0
           AND u.status = 1
-        ORDER BY u.created_time DESC
+        ORDER BY u.created_at DESC
     </select>
 
     <!-- 批量更新用户状态 -->
@@ -150,5 +157,46 @@
           )
         LIMIT 1
     </insert>
+
+    <!-- 搜索用户 -->
+    <select id="searchUsers" resultMap="UserWithRolesResultMap">
+        SELECT
+            u.id,
+            u.username,
+            u.password_hash,
+            u.email,
+            u.phone,
+            u.nickname,
+            u.avatar_url,
+            u.bio,
+            u.gender,
+            u.birthday,
+            u.address,
+            u.status,
+            u.google_id,
+            u.provider_type,
+            u.is_email_verified,
+            u.last_login_at,
+            u.created_at,
+            u.updated_at,
+            r.id as role_id,
+            r.name as role_name,
+            r.code as role_code,
+            r.description as role_description,
+            r.status as role_status
+        FROM sys_user u
+        LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+        LEFT JOIN sys_role r ON ur.role_id = r.id AND r.status = 1
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (
+                u.username LIKE CONCAT('%', #{keyword}, '%')
+                OR u.nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR u.email LIKE CONCAT('%', #{keyword}, '%')
+                OR u.phone LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        ORDER BY u.created_at DESC
+    </select>
 
 </mapper>

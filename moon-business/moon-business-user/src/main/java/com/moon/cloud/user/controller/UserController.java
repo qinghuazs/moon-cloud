@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moon.cloud.response.web.MoonCloudResponse;
 import com.moon.cloud.user.dto.*;
+import jakarta.servlet.http.HttpServletResponse;
 import com.moon.cloud.user.entity.User;
 import com.moon.cloud.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -202,5 +203,42 @@ public class UserController {
     public MoonCloudResponse<Long> countUsers() {
         long count = userService.countUsers(null);
         return MoonCloudResponse.success(count);
+    }
+
+    @Operation(summary = "获取当前用户资料", description = "获取当前登录用户的详细资料")
+    @GetMapping("/profile")
+    public MoonCloudResponse<User> getCurrentUserProfile(@Parameter(hidden = true) @RequestHeader("Authorization") String token) {
+        User user = userService.getCurrentUser(token);
+        return MoonCloudResponse.success(user);
+    }
+
+    @Operation(summary = "更新当前用户资料", description = "更新当前登录用户的个人资料")
+    @PutMapping("/profile")
+    public MoonCloudResponse<User> updateCurrentUserProfile(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String token,
+            @Valid @RequestBody UserProfileUpdateRequest request) {
+        User updatedUser = userService.updateUserProfile(token, request);
+        return MoonCloudResponse.success(updatedUser);
+    }
+
+    @Operation(summary = "批量导出用户", description = "导出用户列表为Excel")
+    @PreAuthorize("hasAuthority('user:export')")
+    @GetMapping("/export")
+    public void exportUsers(
+            @Valid UserQueryRequest request,
+            HttpServletResponse response) {
+        userService.exportUsers(request, response);
+    }
+
+    @Operation(summary = "搜索用户", description = "根据关键字搜索用户")
+    @PreAuthorize("hasAuthority('user:read')")
+    @GetMapping("/search")
+    public MoonCloudResponse<IPage<User>> searchUsers(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") Integer current,
+            @RequestParam(defaultValue = "10") Integer size) {
+        Page<User> page = new Page<>(current, size);
+        IPage<User> users = userService.searchUsers(page, keyword);
+        return MoonCloudResponse.success(users);
     }
 }

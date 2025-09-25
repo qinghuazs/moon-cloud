@@ -8,7 +8,15 @@
       "Bash(npx create-next-app:*)",
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
-      "Bash(ESLINT_NO_DEV_ERRORS=true npm run build)"
+      "Bash(ESLINT_NO_DEV_ERRORS=true npm run build)",
+      "Bash(source .env)",
+      "Bash(DB_HOST=117.72.42.55 DB_PORT=3306 DB_NAME=lemon_appstore DB_USERNAME=lemon DB_PASSWORD=lemon1201 REDIS_HOST=117.72.42.55 REDIS_PORT=6379 REDIS_PASSWORD=telek7890- mvn spring-boot:run)",
+      "Bash(DB_HOST=117.72.42.55 DB_PORT=3306 DB_NAME=lemon_appstore DB_USERNAME=lemon DB_PASSWORD=lemon1201 REDIS_HOST=117.72.42.55 REDIS_PORT=6379 REDIS_PASSWORD=telek7890- java -jar target/moon-business-user-1.0.0-SNAPSHOT.jar)",
+      "Bash(DB_HOST=117.72.42.55 DB_PORT=3306 DB_NAME=lemon_appstore DB_USERNAME=lemon DB_PASSWORD=lemon1201 REDIS_HOST=117.72.42.55 REDIS_PORT=6379 REDIS_PASSWORD=telek7890- mvn spring-boot:run -pl moon-business/moon-business-user)",
+      "Bash(DB_HOST=117.72.42.55 DB_PORT=3306 DB_NAME=lemon_appstore DB_USERNAME=lemon DB_PASSWORD=lemon1201 DB_POOL_SIZE_MIN=10 DB_POOL_SIZE_MAX=100 DB_CONNECTION_TIMEOUT=30000 DB_IDLE_TIMEOUT=30000 DB_MAX_LIFETIME=1800000 REDIS_HOST=117.72.42.55 REDIS_PORT=6379 REDIS_PASSWORD=telek7890- REDIS_DATABASE=0 REDIS_TIMEOUT=6000 REDIS_POOL_MAX_ACTIVE=8 REDIS_POOL_MAX_WAIT=-1 REDIS_POOL_MAX_IDLE=8 REDIS_POOL_MIN_IDLE=0 JWT_SECRET=moonCloudUserSecretKey2024 JWT_EXPIRATION=86400000 JWT_REFRESH_EXPIRATION=604800000 SERVER_PORT=8080 SERVER_CONTEXT_PATH=/api/user LOG_LEVEL=INFO mvn spring-boot:run -pl moon-business/moon-business-user)",
+      "Bash(chmod:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)"
     ],
     "deny": [],
     "ask": []
