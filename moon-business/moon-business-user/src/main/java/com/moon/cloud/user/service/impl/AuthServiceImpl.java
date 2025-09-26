@@ -21,6 +21,7 @@ import com.moon.cloud.captcha.core.Captcha;
 import com.moon.cloud.captcha.enums.CaptchaType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -74,6 +75,7 @@ public class AuthServiceImpl implements AuthService {
     private LoginLogService loginLogService;
 
     @Autowired
+    @Qualifier("kafkaEmailService")
     private EmailService emailService;
 
     @Autowired
@@ -507,7 +509,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 使用验证码服务生成6位数字验证码
-            Captcha captcha = captchaService.generate(CaptchaType.DIGIT, 6);
+            Captcha captcha = captchaService.generate(CaptchaType.MIXED, 4);
             String code = captcha.getCode();
 
             // 使用验证码服务保存验证码，有效期10分钟

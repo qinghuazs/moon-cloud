@@ -53,11 +53,16 @@ google:
   oauth:
     client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
 
+# 邮件服务配置
+email:
+  service:
+    type: kafka  # kafka 或 direct
+
 # 验证码配置
 moon:
   captcha:
     enabled: true                 # 启用验证码模块
-    type: DIGIT                   # 默认生成数字验证码
+    type: MIXED                   # 默认生成数字验证码
     length: 6                     # 验证码长度
     expire-time: 600              # 有效期10分钟（600秒）
     storage: REDIS                # 使用Redis存储

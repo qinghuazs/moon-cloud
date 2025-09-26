@@ -6,6 +6,7 @@ import com.moon.cloud.user.service.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,8 @@ import java.util.concurrent.CompletableFuture;
  * @since 2024-01-01
  */
 @Slf4j
-@Service
+@Service("kafkaEmailService")
+@ConditionalOnProperty(name = "email.service.type", havingValue = "kafka", matchIfMissing = true)
 public class KafkaEmailServiceImpl implements EmailService {
 
     @Autowired

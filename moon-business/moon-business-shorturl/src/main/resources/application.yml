@@ -5,24 +5,7 @@ server:
 
 spring:
   application:
-    name: moon-business-shorturl
-  
-  # 数据源配置
-  datasource:
-    url: jdbc:mysql://localhost:3306/shorturl?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: password
-
-    # HikariCP连接池配置
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      auto-commit: true
-      idle-timeout: 30000
-      pool-name: DateSourceHikariCP
-      max-lifetime: 900000
-      connection-timeout: 30000 
+    name: moon-business-shorturl 
     
 # MyBatis Plus配置
 mybatis-plus:
@@ -44,20 +27,6 @@ mybatis-plus:
     redis:
       time-to-live: 24h
       cache-null-values: false
-      
-  # Redis配置
-  redis:
-    host: localhost
-    port: 6379
-    password:
-    timeout: 3000ms
-    database: 0
-    lettuce:
-      pool:
-        max-active: 20
-        max-wait: -1ms
-        max-idle: 10
-        min-idle: 5
         
   # Thymeleaf配置
   thymeleaf:
@@ -74,7 +43,7 @@ mybatis-plus:
 
 # 应用配置
 app:
-  domain: http://localhost:8080
+  domain: ${APP_DOMAIN:http://localhost:8080}
   # 分区配置
   partition:
     enabled: true                    # 是否启用分区功能
@@ -86,19 +55,19 @@ app:
 # 短链配置
 shorturl:
   # 默认短链长度
-  default-length: 7
+  default-length: ${SHORTURL_DEFAULT_LENGTH:7}
   # 最大重试次数
-  max-retry: 3
+  max-retry: ${SHORTURL_MAX_RETRY:3}
   # 默认过期时间（天）
-  default-expire-days: 365
+  default-expire-days: ${SHORTURL_DEFAULT_EXPIRE_DAYS:365}
   # 缓存过期时间（秒）
-  cache-expire-seconds: 3600
+  cache-expire-seconds: ${SHORTURL_CACHE_EXPIRE_SECONDS:3600}
   # 机器ID（用于Snowflake算法）
-  machine-id: 1
+  machine-id: ${SHORTURL_MACHINE_ID:1}
   # 布隆过滤器配置
   bloom-filter:
-    expected-insertions: 10000000
-    false-positive-rate: 0.001
+    expected-insertions: ${BLOOM_FILTER_EXPECTED_INSERTIONS:10000000}
+    false-positive-rate: ${BLOOM_FILTER_FALSE_POSITIVE_RATE:0.001}
 
   # 缓存预热配置
   cache:

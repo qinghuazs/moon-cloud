@@ -3,6 +3,7 @@ package com.moon.cloud.user.service.impl;
 import com.moon.cloud.user.service.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -18,6 +19,7 @@ import jakarta.mail.internet.MimeMessage;
  */
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "email.service.type", havingValue = "direct", matchIfMissing = false)
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
