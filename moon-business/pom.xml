@@ -23,6 +23,7 @@
         <module>moon-business-gateway</module>
         <module>moon-business-shorturl</module>
         <module>moon-business-user</module>
+        <module>moon-business-appstore</module>
     </modules>
 
 </project>

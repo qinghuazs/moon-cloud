@@ -1,0 +1,62 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /api/appstore
+
+spring:
+  application:
+    name: moon-business-appstore
+
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+  # 缓存配置
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000  # 1小时
+      cache-null-values: false
+
+# MyBatis Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# Swagger配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  packages-to-scan: com.moon.cloud.appstore.controller
+  paths-to-match: /**
+
+# 日志配置
+logging:
+  level:
+    com.moon.cloud.appstore: debug
+    com.baomidou.mybatisplus: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/moon-business-appstore.log
+    max-size: 10MB
+    max-history: 30
+
+# 应用配置
+app:
+  name: Moon Business AppStore
+  version: 1.0.0
+  description: APP Store 限免应用推荐服务

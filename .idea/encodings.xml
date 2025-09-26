@@ -3,6 +3,8 @@
   <component name="Encoding" native2AsciiForPropertiesFiles="true">
     <file url="file://$PROJECT_DIR$/moon-ai/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/moon-ai/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/moon-business/moon-business-appstore/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/moon-business/moon-business-appstore/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/moon-business/moon-business-eureka-client/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/moon-business/moon-business-eureka-client/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/moon-business/moon-business-eureka/src/main/java" charset="UTF-8" />

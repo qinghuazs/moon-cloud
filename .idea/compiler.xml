@@ -11,6 +11,7 @@
         <module name="moon-business-web-drift-bottle" />
         <module name="moon-business-gateway" />
         <module name="moon-business-eureka-client" />
+        <module name="moon-business-appstore" />
         <module name="moon-spring-boot-starter-validator" />
         <module name="moon-concurrent" />
       </profile>
@@ -34,31 +35,13 @@
         </processorPath>
         <module name="moon-spring-boot-starter-threadpool" />
       </profile>
-      <profile name="Annotation profile for moon-business-gps" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
-        </processorPath>
-        <module name="moon-business-gps" />
-      </profile>
-      <profile name="Annotation profile for moon-business-user" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
-        </processorPath>
-        <module name="moon-business-user" />
-      </profile>
       <profile name="Annotation profile for moon-spring-boot-starter-captcha" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/springframework/boot/spring-boot-configuration-processor/3.4.1/spring-boot-configuration-processor-3.4.1.jar" />
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/springframework/boot/spring-boot-configuration-processor/3.4.1/spring-boot-configuration-processor-3.4.1.jar" />
         </processorPath>
@@ -70,8 +53,11 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
+        <module name="moon-business-user" />
         <module name="moon-business-shorturl" />
+        <module name="moon-business-gps" />
       </profile>
     </annotationProcessing>
   </component>
@@ -80,6 +66,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="moon-ai" options="" />
       <module name="moon-business" options="" />
+      <module name="moon-business-appstore" options="" />
       <module name="moon-business-eureka" options="" />
       <module name="moon-business-eureka-client" options="" />
       <module name="moon-business-gateway" options="" />
