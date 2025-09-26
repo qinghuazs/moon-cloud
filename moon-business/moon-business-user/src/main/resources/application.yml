@@ -58,6 +58,11 @@ email:
   service:
     type: kafka  # kafka 或 direct
 
+# Kafka配置
+kafka:
+  topics:
+    email: ${KAFKA_EMAIL_TOPIC:email-events}
+
 # 验证码配置
 moon:
   captcha:
