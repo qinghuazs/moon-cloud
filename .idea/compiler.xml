@@ -20,6 +20,7 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
         </processorPath>
         <module name="moon-spring-boot-starter-response" />
       </profile>
@@ -28,6 +29,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
         </processorPath>
         <module name="moon-spring-boot-starter-threadpool" />
@@ -39,9 +41,37 @@
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
-        <module name="moon-business-user" />
-        <module name="moon-business-gps" />
         <module name="moon-business-shorturl" />
+      </profile>
+      <profile name="Annotation profile for moon-business-gps" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="moon-business-gps" />
+      </profile>
+      <profile name="Annotation profile for moon-business-user" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="moon-business-user" />
+      </profile>
+      <profile name="Annotation profile for moon-spring-boot-starter-captcha" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/springframework/boot/spring-boot-configuration-processor/3.4.1/spring-boot-configuration-processor-3.4.1.jar" />
+        </processorPath>
+        <module name="moon-spring-boot-starter-captcha" />
       </profile>
     </annotationProcessing>
   </component>

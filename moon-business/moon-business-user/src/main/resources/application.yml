@@ -42,7 +42,7 @@ mybatis-plus:
 
 # JWT配置
 jwt:
-  secret: moonCloudUserSecretKey2024
+  secret: moonCloudUserSecretKey2024SecureForJWT
   expiration: 86400000  # 24小时
   refresh-expiration: 604800000  # 7天
   header: Authorization
@@ -52,6 +52,27 @@ jwt:
 google:
   oauth:
     client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+
+# 验证码配置
+moon:
+  captcha:
+    enabled: true                 # 启用验证码模块
+    type: DIGIT                   # 默认生成数字验证码
+    length: 6                     # 验证码长度
+    expire-time: 600              # 有效期10分钟（600秒）
+    storage: REDIS                # 使用Redis存储
+
+    # Redis配置
+    redis:
+      key-prefix: "captcha:"      # 键前缀
+      failure-prefix: "captcha:fail:"  # 失败记录键前缀
+
+    # 安全配置
+    security:
+      max-retry: 5                # 最大重试次数
+      lock-time: 1800             # 锁定时间30分钟（1800秒）
+      case-sensitive: false       # 不区分大小写
+      allow-reuse: false          # 不允许重复使用
 
 # 日志配置
 logging:

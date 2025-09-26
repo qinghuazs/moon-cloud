@@ -147,6 +147,25 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
         </dependency>
+
+        <!-- Spring Kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!-- JavaMail API for email sending -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- Moon Captcha Starter -->
+        <dependency>
+            <groupId>com.mooncloud</groupId>
+            <artifactId>moon-spring-boot-starter-captcha</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
     
     <build>

@@ -155,4 +155,31 @@ public interface AuthService {
      * @return 登录响应对象，包含访问令牌和刷新令牌
      */
     LoginResponse register(RegisterRequest registerRequest, String ip, String userAgent);
+
+    /**
+     * 发送密码重置验证码
+     *
+     * @param email 邮箱地址
+     * @return 是否发送成功
+     */
+    boolean sendPasswordResetCode(String email);
+
+    /**
+     * 验证重置密码验证码
+     *
+     * @param email 邮箱地址
+     * @param code 验证码
+     * @return 是否验证成功
+     */
+    boolean verifyPasswordResetCode(String email, String code);
+
+    /**
+     * 重置密码
+     *
+     * @param email 邮箱地址
+     * @param code 验证码
+     * @param newPassword 新密码
+     * @return 是否重置成功
+     */
+    boolean resetPassword(String email, String code, String newPassword);
 }

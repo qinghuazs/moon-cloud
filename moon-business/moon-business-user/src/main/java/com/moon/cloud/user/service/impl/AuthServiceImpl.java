@@ -7,6 +7,7 @@ import com.moon.cloud.user.entity.Permission;
 import com.moon.cloud.user.entity.Role;
 import com.moon.cloud.user.entity.User;
 import com.moon.cloud.user.exception.AuthException;
+import com.moon.cloud.user.exception.BusinessException;
 import com.moon.cloud.user.mapper.PermissionMapper;
 import com.moon.cloud.user.mapper.RoleMapper;
 import com.moon.cloud.user.mapper.UserMapper;
@@ -14,6 +15,10 @@ import com.moon.cloud.user.service.AuthService;
 import com.moon.cloud.user.service.LoginLogService;
 import com.moon.cloud.user.util.JwtUtil;
 import com.moon.cloud.user.util.RedisUtil;
+import com.moon.cloud.user.service.EmailService;
+import com.moon.cloud.captcha.service.CaptchaService;
+import com.moon.cloud.captcha.core.Captcha;
+import com.moon.cloud.captcha.enums.CaptchaType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -67,6 +72,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private LoginLogService loginLogService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private CaptchaService captchaService;
 
     @Override
     public LoginResponse login(String email, String password, String ip, String userAgent) {
@@ -462,7 +473,7 @@ public class AuthServiceImpl implements AuthService {
             userMapper.assignDefaultRole(newUser.getId());
         } catch (Exception e) {
             // 如果分配角色失败，记录日志但不影响注册
-            System.err.println("分配默认角色失败，用户ID: " + newUser.getId() + ", 错误: " + e.getMessage());
+            log.error(String.format("分配默认角色失败，用户%s, 错误信息：", newUser.getId(), e));
         }
 
         // 生成JWT令牌
@@ -477,4 +488,118 @@ public class AuthServiceImpl implements AuthService {
 
         return new LoginResponse(token, refreshToken);
     }
+
+    @Override
+    public boolean sendPasswordResetCode(String email) {
+        try {
+            // 检查邮箱是否被锁定
+            if (captchaService.isLocked(email)) {
+                log.warn("邮箱验证失败次数过多，已被锁定: {}", email);
+                throw new RuntimeException("验证失败次数过多，请30分钟后重试");
+            }
+
+            // 查询用户是否存在
+            User user = userMapper.selectByEmail(email);
+            if (user == null) {
+                log.warn("尝试重置不存在的邮箱密码: {}", email);
+                // 为了安全，即使用户不存在也返回成功
+                return true;
+            }
+
+            // 使用验证码服务生成6位数字验证码
+            Captcha captcha = captchaService.generate(CaptchaType.DIGIT, 6);
+            String code = captcha.getCode();
+
+            // 使用验证码服务保存验证码，有效期10分钟
+            captchaService.save(email, captcha, 10, TimeUnit.MINUTES);
+
+            // 发送邮件（通过Kafka）
+            emailService.sendVerificationCode(email, code);
+
+            log.info("密码重置验证码已发送: email={}", email);
+            return true;
+        } catch (Exception e) {
+            log.error("发送密码重置验证码失败: email={}", email, e);
+            throw new BusinessException("发送验证码失败，请稍后重试");
+        }
+    }
+
+    @Override
+    public boolean verifyPasswordResetCode(String email, String code) {
+        try {
+            // 检查邮箱是否被锁定
+            if (captchaService.isLocked(email)) {
+                log.warn("邮箱验证失败次数过多，已被锁定: {}", email);
+                return false;
+            }
+
+            // 使用验证码服务验证
+            boolean valid = captchaService.validate(email, code);
+            if (!valid) {
+                log.warn("验证码验证失败: email={}", email);
+                // 检查失败次数
+                int failCount = captchaService.getFailureCount(email);
+                if (failCount >= 5) {
+                    log.warn("验证码验证失败次数过多: email={}, count={}", email, failCount);
+                }
+                return false;
+            }
+            log.info("验证码验证成功: email={}", email);
+            return true;
+        } catch (Exception e) {
+            log.error("验证密码重置验证码失败: email={}", email, e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean resetPassword(String email, String code, String newPassword) {
+        try {
+            // 先验证验证码
+            if (!verifyPasswordResetCode(email, code)) {
+                log.warn("重置密码时验证码验证失败: email={}", email);
+                throw new RuntimeException("验证码错误或已过期");
+            }
+
+            // 查询用户
+            User user = userMapper.selectByEmail(email);
+            if (user == null) {
+                log.error("重置密码时用户不存在: email={}", email);
+                throw new RuntimeException("用户不存在");
+            }
+
+            // 更新密码
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            user.setPasswordHash(encodedPassword);
+            user.setUpdatedAt(LocalDateTime.now());
+
+            int updated = userMapper.updateById(user);
+            if (updated <= 0) {
+                log.error("更新用户密码失败: userId={}", user.getId());
+                throw new RuntimeException("密码重置失败");
+            }
+
+            // 删除验证码
+            captchaService.remove(email);
+
+            // 清除用户缓存
+            redisUtil.clearUserCache(user.getId());
+
+            // 发送密码重置成功通知邮件
+            try {
+                emailService.sendPasswordResetNotification(email);
+            } catch (Exception e) {
+                // 发送通知邮件失败不影响密码重置
+                log.error("发送密码重置成功通知邮件失败: email={}", email, e);
+            }
+
+            log.info("用户密码重置成功: userId={}, email={}", user.getId(), email);
+            return true;
+        } catch (Exception e) {
+            log.error("重置密码失败: email={}", email, e);
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
 }

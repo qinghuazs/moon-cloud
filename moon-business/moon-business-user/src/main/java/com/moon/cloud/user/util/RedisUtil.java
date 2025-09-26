@@ -37,6 +37,12 @@ public class RedisUtil {
     // IP锁定前缀
     private static final String IP_LOCK_PREFIX = "ip:lock:";
 
+    // 邮箱验证码前缀
+    private static final String EMAIL_VERIFICATION_CODE_PREFIX = "email:code:";
+
+    // 验证码验证失败次数前缀
+    private static final String CODE_VERIFY_FAIL_PREFIX = "code:fail:";
+
     /**
      * 设置缓存
      */
@@ -366,6 +372,68 @@ public class RedisUtil {
      */
     public Long hIncrement(String key, String hashKey, long delta) {
         return redisTemplate.opsForHash().increment(key, hashKey, delta);
+    }
+
+    // ==================== 邮箱验证码相关方法 ====================
+
+    /**
+     * 保存邮箱验证码
+     */
+    public void saveEmailVerificationCode(String email, String code, long timeout, TimeUnit unit) {
+        String key = EMAIL_VERIFICATION_CODE_PREFIX + email;
+        set(key, code, timeout, unit);
+    }
+
+    /**
+     * 获取邮箱验证码
+     */
+    public String getEmailVerificationCode(String email) {
+        String key = EMAIL_VERIFICATION_CODE_PREFIX + email;
+        Object code = get(key);
+        return code != null ? code.toString() : null;
+    }
+
+    /**
+     * 删除邮箱验证码
+     */
+    public void deleteEmailVerificationCode(String email) {
+        String key = EMAIL_VERIFICATION_CODE_PREFIX + email;
+        delete(key);
+    }
+
+    /**
+     * 记录验证码验证失败次数
+     */
+    public Long recordCodeVerifyFailure(String email) {
+        String key = CODE_VERIFY_FAIL_PREFIX + email;
+        Long count = increment(key);
+        // 设置过期时间为30分钟
+        expire(key, 30, TimeUnit.MINUTES);
+        return count;
+    }
+
+    /**
+     * 获取验证码验证失败次数
+     */
+    public Long getCodeVerifyFailureCount(String email) {
+        String key = CODE_VERIFY_FAIL_PREFIX + email;
+        Object count = get(key);
+        return count != null ? Long.valueOf(count.toString()) : 0L;
+    }
+
+    /**
+     * 清除验证码验证失败次数
+     */
+    public void clearCodeVerifyFailureCount(String email) {
+        String key = CODE_VERIFY_FAIL_PREFIX + email;
+        delete(key);
+    }
+
+    /**
+     * 检查邮箱是否被锁定（验证失败次数过多）
+     */
+    public boolean isEmailLocked(String email) {
+        return getCodeVerifyFailureCount(email) >= 5;
     }
 
     // ==================== List操作相关方法 ====================

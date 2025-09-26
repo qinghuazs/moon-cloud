@@ -6,6 +6,9 @@ import com.moon.cloud.user.dto.LoginRequest;
 import com.moon.cloud.user.dto.LoginResponse;
 import com.moon.cloud.user.dto.RefreshTokenRequest;
 import com.moon.cloud.user.dto.RegisterRequest;
+import com.moon.cloud.user.dto.ForgotPasswordRequest;
+import com.moon.cloud.user.dto.VerifyCodeRequest;
+import com.moon.cloud.user.dto.ResetPasswordRequest;
 import com.moon.cloud.user.entity.User;
 import com.moon.cloud.user.service.AuthService;
 import com.moon.cloud.user.service.GoogleOAuthService;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 认证控制器
@@ -148,6 +152,53 @@ public class AuthController {
         authService.blacklistToken(token);
 
         return MoonCloudResponse.success(new LoginResponse(newToken, newRefreshToken));
+    }
+
+    @Operation(summary = "发送密码重置验证码", description = "向邮箱发送密码重置验证码")
+    @PostMapping("/forgot-password")
+    public MoonCloudResponse<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        boolean success = authService.sendPasswordResetCode(request.getEmail());
+        Map<String, String> response = new HashMap<>();
+        if (success) {
+            response.put("message", "验证码已发送到您的邮箱，请查收");
+            return MoonCloudResponse.success(response);
+        } else {
+            return MoonCloudResponse.error("发送验证码失败，请稍后重试");
+        }
+    }
+
+    @Operation(summary = "验证密码重置验证码", description = "验证邮箱收到的验证码是否正确")
+    @PostMapping("/verify-code")
+    public MoonCloudResponse<Map<String, Boolean>> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
+        boolean valid = authService.verifyPasswordResetCode(request.getEmail(), request.getCode());
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("valid", valid);
+        if (valid) {
+            return MoonCloudResponse.success(response);
+        } else {
+            return MoonCloudResponse.error("验证码错误或已过期");
+        }
+    }
+
+    @Operation(summary = "重置密码", description = "使用验证码重置密码")
+    @PostMapping("/reset-password")
+    public MoonCloudResponse<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            boolean success = authService.resetPassword(
+                request.getEmail(),
+                request.getCode(),
+                request.getNewPassword()
+            );
+            Map<String, String> response = new HashMap<>();
+            if (success) {
+                response.put("message", "密码重置成功");
+                return MoonCloudResponse.success(response);
+            } else {
+                return MoonCloudResponse.error("密码重置失败");
+            }
+        } catch (Exception e) {
+            return MoonCloudResponse.error(e.getMessage());
+        }
     }
 
     /**

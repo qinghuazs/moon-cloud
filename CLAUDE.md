@@ -2,6 +2,18 @@
 
 This document provides comprehensive guidance for future Claude Code instances to understand and work effectively with the Moon Cloud microservices framework.
 
+## 回答问题时用中文
+
+## 在处理复杂问题时进行深度思考
+
+## 在开发复杂功能时遵循 需求分析-功能拆解-流程设计-系统设计-编码 的流程，先输出需求文档，再输出详细设计文档，最后再进行开发
+
+## 开发完成后编写单元测试文档
+
+## 如果涉及到对外接口，编写或者更新对应模块的接口文档
+
+## 使用 Spring Boot 3.4.1 的版本，不要使用已废弃的特性
+
 ## Project Overview
 
 Moon Cloud is a Java microservices framework built on Spring Boot 3.4.1 and Java 21, designed to provide a scalable and modular platform for business applications.

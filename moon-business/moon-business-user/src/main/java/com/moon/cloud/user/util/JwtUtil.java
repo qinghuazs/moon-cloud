@@ -20,7 +20,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:moonCloudSecretKeyForJwtTokenGenerationAndValidation}")
+    @Value("${jwt.secret:moonCloudSecretKey256BitForHS256}")
     private String secret;
 
     @Value("${jwt.expiration:86400}")
@@ -121,7 +121,7 @@ public class JwtUtil {
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -216,7 +216,7 @@ public class JwtUtil {
                 .setId(jti)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 }
