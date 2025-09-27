@@ -16,7 +16,8 @@
       "Bash(mkdir:*)",
       "Bash(curl:*)",
       "Bash(awk:*)",
-      "Bash(xargs -r kill -9)"
+      "Bash(xargs -r kill -9)",
+      "Read(//Users/xingleiwang/Documents/yonyou/code/appstore-backed/src/main/java/com/qinghuazs/appstore/app/model/**)"
     ],
     "deny": [],
     "ask": []

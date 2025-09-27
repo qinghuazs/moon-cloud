@@ -60,3 +60,25 @@ app:
   name: Moon Business AppStore
   version: 1.0.0
   description: APP Store 限免应用推荐服务
+
+# App Store爬虫配置
+appstore:
+  # Express服务配置
+  express:
+    url: http://localhost:3090
+    timeout: 30
+
+  # 消费者配置
+  consumer:
+    enabled: true  # 是否启用消费者
+    batch-size: 5  # 批量处理大小（减小以提高成功率）
+    thread-pool-size: 3  # 线程池大小（减小以避免并发过高）
+    max-retry: 3  # 最大重试次数
+    timeout: 60  # 单个请求超时时间（秒，已废弃，使用动态计算）
+
+  # Redis队列配置
+  redis:
+    queue:
+      app-url: "appstore:app:url:queue"  # App URL队列
+      app-url-failed: "appstore:app:url:failed:queue"  # 失败队列
+      app-url-processing: "appstore:app:url:processing"  # 正在处理集合
