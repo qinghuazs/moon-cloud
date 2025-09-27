@@ -54,7 +54,8 @@ public class RedisConfig {
         // Redis连接配置
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
         redisConfig.setHostName(getEnvValue("REDIS_HOST", "localhost"));
-        redisConfig.setPort(Integer.parseInt(getEnvValue("REDIS_PORT", "6379")));
+//        redisConfig.setPort(Integer.parseInt(getEnvValue("REDIS_PORT", "6380")));
+        redisConfig.setPort(6380);
         redisConfig.setDatabase(Integer.parseInt(getEnvValue("REDIS_DATABASE", "0")));
 
         String password = getEnvValue("REDIS_PASSWORD", "");

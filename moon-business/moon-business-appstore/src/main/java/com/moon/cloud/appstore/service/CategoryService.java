@@ -88,4 +88,11 @@ public interface CategoryService {
      * @return 初始化结果
      */
     boolean batchInsertCategories(List<Category> categories);
+
+    /**
+     * 获取所有激活状态的分类
+     *
+     * @return 激活的分类列表
+     */
+    List<Category> getAllActiveCategories();
 }

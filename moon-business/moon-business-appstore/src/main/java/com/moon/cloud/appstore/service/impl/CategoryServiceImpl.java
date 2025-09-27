@@ -221,6 +221,14 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
+    @Override
+    public List<Category> getAllActiveCategories() {
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Category::getIsActive, true)
+               .orderByAsc(Category::getSortOrder);
+        return categoryMapper.selectList(wrapper);
+    }
+
     private List<CategoryVO> buildCategoryTree(List<Category> categories) {
         // 分组：父分类和子分类
         Map<String, List<Category>> childrenMap = categories.stream()
