@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moon.cloud.appstore.mapper.FreePromotionMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="FreeAppResultMap" type="com.moon.cloud.appstore.vo.FreeAppVO">
+        <result column="app_id" property="appId"/>
+        <result column="appstore_app_id" property="appstoreId"/>
+        <result column="app_url" property="appUrl"/>
+        <result column="name" property="name"/>
+        <result column="subtitle" property="subtitle"/>
+        <result column="developer_name" property="developerName"/>
+        <result column="icon_url" property="iconUrl"/>
+        <result column="category_name" property="categoryName"/>
+        <result column="version" property="version"/>
+        <result column="rating" property="rating"/>
+        <result column="rating_count" property="ratingCount"/>
+        <result column="original_price" property="originalPrice"/>
+        <result column="current_price" property="currentPrice"/>
+        <result column="savings_amount" property="savingsAmount"/>
+        <result column="free_start_time" property="freeStartTime"/>
+        <result column="free_end_time" property="freeEndTime"/>
+        <result column="is_featured" property="isFeatured"/>
+        <result column="is_hot" property="isHot"/>
+        <result column="has_in_app_purchase" property="hasInAppPurchase"/>
+        <result column="has_ads" property="hasAds"/>
+        <result column="discovered_at" property="discoveredAt"/>
+    </resultMap>
+
+    <!-- 联表查询今天的限免应用 -->
+    <select id="selectTodayFreeApps" resultMap="FreeAppResultMap">
+        SELECT
+            fp.app_id,
+            fp.appstore_app_id,
+            fp.original_price,
+            fp.promotion_price as current_price,
+            fp.savings_amount,
+            fp.start_time as free_start_time,
+            fp.end_time as free_end_time,
+            fp.is_featured,
+            fp.is_hot,
+            fp.discovered_at,
+            fp.priority_score,
+            a.name,
+            a.subtitle,
+            a.developer_name,
+            a.icon_url,
+            a.primary_category_name as category_name,
+            a.version,
+            a.rating,
+            a.rating_count,
+            a.app_url,
+            a.file_size,
+            a.has_in_app_purchase,
+            a.has_ads,
+            a.supported_devices
+        FROM
+            free_promotion fp
+            INNER JOIN app a ON fp.app_id = a.id
+        <where>
+            <if test="status != null">
+                AND fp.status = #{status}
+            </if>
+            <if test="startTime != null">
+                AND fp.start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND fp.end_time &lt;= #{endTime}
+            </if>
+            <if test="isFeatured != null">
+                AND fp.is_featured = #{isFeatured}
+            </if>
+            <if test="isHot != null">
+                AND fp.is_hot = #{isHot}
+            </if>
+            <if test="categoryId != null">
+                AND a.primary_category_id = #{categoryId}
+            </if>
+            <if test="minRating != null">
+                AND a.rating >= #{minRating}
+            </if>
+            <if test="minOriginalPrice != null">
+                AND fp.original_price >= #{minOriginalPrice}
+            </if>
+            <if test="maxOriginalPrice != null">
+                AND fp.original_price &lt;= #{maxOriginalPrice}
+            </if>
+        </where>
+        <choose>
+            <when test="sortBy == 'savings'">
+                ORDER BY fp.savings_amount DESC
+            </when>
+            <when test="sortBy == 'rating'">
+                ORDER BY a.rating DESC, a.rating_count DESC
+            </when>
+            <when test="sortBy == 'priority'">
+                ORDER BY fp.priority_score DESC
+            </when>
+            <otherwise>
+                ORDER BY fp.discovered_at DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- 统计总数 -->
+    <select id="countTodayFreeApps" resultType="long">
+        SELECT
+            COUNT(*)
+        FROM
+            free_promotion fp
+            INNER JOIN app a ON fp.app_id = a.id
+        <where>
+            <if test="status != null">
+                AND fp.status = #{status}
+            </if>
+            <if test="startTime != null">
+                AND fp.start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND fp.end_time &lt;= #{endTime}
+            </if>
+            <if test="isFeatured != null">
+                AND fp.is_featured = #{isFeatured}
+            </if>
+            <if test="isHot != null">
+                AND fp.is_hot = #{isHot}
+            </if>
+            <if test="categoryId != null">
+                AND a.primary_category_id = #{categoryId}
+            </if>
+            <if test="minRating != null">
+                AND a.rating >= #{minRating}
+            </if>
+            <if test="minOriginalPrice != null">
+                AND fp.original_price >= #{minOriginalPrice}
+            </if>
+            <if test="maxOriginalPrice != null">
+                AND fp.original_price &lt;= #{maxOriginalPrice}
+            </if>
+        </where>
+    </select>
+
+</mapper>

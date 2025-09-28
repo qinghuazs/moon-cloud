@@ -42,54 +42,101 @@ public class FreeAppServiceImpl implements FreeAppService {
 
     @Override
     public Page<FreeAppVO> getTodayFreeApps(FreeAppListDTO dto) {
-        // 构建查询条件
-        LambdaQueryWrapper<FreePromotion> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FreePromotion::getStatus, "ACTIVE");
-        wrapper.ge(FreePromotion::getStartTime, LocalDate.now());
+        // 构建查询参数
+        String status = "ACTIVE";
+        LocalDateTime startTime = LocalDate.now().atStartOfDay();
+        LocalDateTime endTime = null;
+        Boolean isFeatured = null;
+        Boolean isHot = null;
 
-        // 筛选条件
+        // 处理筛选条件
         if ("featured".equals(dto.getFilter())) {
-            wrapper.eq(FreePromotion::getIsFeatured, true);
+            isFeatured = true;
         } else if ("hot".equals(dto.getFilter())) {
-            wrapper.eq(FreePromotion::getIsHot, true);
+            isHot = true;
         } else if ("ending".equals(dto.getFilter())) {
-            LocalDateTime endingSoon = LocalDateTime.now().plusHours(6);
-            wrapper.le(FreePromotion::getEndTime, endingSoon);
+            endTime = LocalDateTime.now().plusHours(6);
         }
 
-        // 先查询总记录数
-        Long total = freePromotionMapper.selectCount(wrapper);
-
-        // 排序方式
-        if ("savings".equals(dto.getSortBy())) {
-            wrapper.orderByDesc(FreePromotion::getSavingsAmount);
-        } else if ("rating".equals(dto.getSortBy())) {
-            // 需要关联查询，这里简化处理
-            wrapper.orderByDesc(FreePromotion::getPriorityScore);
-        } else {
-            wrapper.orderByDesc(FreePromotion::getDiscoveredAt);
-        }
-
-        // 手动设置分页
+        // 分页参数
         int page = dto.getPage() > 0 ? dto.getPage() : 1;
         int pageSize = dto.getPageSize() > 0 ? dto.getPageSize() : 20;
         int offset = (page - 1) * pageSize;
-        wrapper.last("LIMIT " + offset + ", " + pageSize);
 
-        // 执行查询
-        List<FreePromotion> promotions = freePromotionMapper.selectList(wrapper);
+        // 查询总记录数
+        Long total = freePromotionMapper.countTodayFreeApps(
+            status,
+            startTime,
+            endTime,
+            isFeatured,
+            isHot,
+            dto.getCategoryId(),
+            dto.getMinRating(),
+            dto.getMinOriginalPrice(),
+            dto.getMaxOriginalPrice()
+        );
+
+        // 查询数据
+        List<FreeAppVO> records = freePromotionMapper.selectTodayFreeApps(
+            status,
+            startTime,
+            endTime,
+            isFeatured,
+            isHot,
+            dto.getCategoryId(),
+            dto.getMinRating(),
+            dto.getMinOriginalPrice(),
+            dto.getMaxOriginalPrice(),
+            dto.getSortBy(),
+            offset,
+            pageSize
+        );
+
+        // 对结果进行后处理，添加计算字段
+        records.forEach(vo -> {
+            // 格式化文件大小（文件大小应该从数据库获取，这里暂时设置为未知）
+            vo.setFileSizeFormatted("未知");
+
+            // 计算剩余时间
+            if (vo.getFreeEndTime() != null) {
+                long hours = ChronoUnit.HOURS.between(LocalDateTime.now(), vo.getFreeEndTime());
+                vo.setRemainingHours((int) Math.max(0, hours));
+                vo.setIsEndingSoon(hours <= 6);
+            }
+
+            // 新发现标记
+            if (vo.getDiscoveredAt() != null) {
+                long hoursSinceDiscovered = ChronoUnit.HOURS.between(vo.getDiscoveredAt(), LocalDateTime.now());
+                vo.setIsNewFound(hoursSinceDiscovered <= 6);
+            } else {
+                vo.setIsNewFound(false);
+            }
+
+            // 生成状态标签
+            List<String> tags = new ArrayList<>();
+            if (vo.getIsNewFound()) tags.add("新发现");
+            if (Boolean.TRUE.equals(vo.getIsHot())) tags.add("热门");
+            if (Boolean.TRUE.equals(vo.getIsEndingSoon())) tags.add("即将结束");
+            if (Boolean.TRUE.equals(vo.getIsFeatured())) tags.add("编辑推荐");
+            vo.setStatusTags(tags);
+
+            // 设置支持设备列表（如果需要）
+            if (vo.getSupportedDevices() == null) {
+                vo.setSupportedDevices(new ArrayList<>());
+            }
+
+            // 生成App Store URL
+            if (vo.getAppUrl() == null && vo.getAppstoreId() != null) {
+                vo.setAppUrl(String.format("https://apps.apple.com/cn/app/id%s", vo.getAppstoreId()));
+            }
+        });
 
         // 构建分页结果
         Page<FreeAppVO> voPage = new Page<>();
-        voPage.setCurrent(page);           // 当前页码
-        voPage.setSize(pageSize);          // 每页大小
-        voPage.setTotal(total);            // 总记录数
-
-        // 转换记录
-        List<FreeAppVO> voList = promotions.stream()
-            .map(this::convertToFreeAppVO)
-            .collect(Collectors.toList());
-        voPage.setRecords(voList);
+        voPage.setCurrent(page);
+        voPage.setSize(pageSize);
+        voPage.setTotal(total);
+        voPage.setRecords(records);
 
         return voPage;
     }

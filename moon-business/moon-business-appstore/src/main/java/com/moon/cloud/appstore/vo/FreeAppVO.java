@@ -94,4 +94,7 @@ public class FreeAppVO {
 
     @Schema(description = "是否含广告")
     private Boolean hasAds;
+
+    @Schema(description = "发现时间")
+    private LocalDateTime discoveredAt;
 }
