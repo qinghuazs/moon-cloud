@@ -46,6 +46,11 @@ public class SearchHistory implements Serializable {
     private String searchQuery;
 
     /**
+     * 搜索关键词(别名)
+     */
+    private String keyword;
+
+    /**
      * 标准化搜索词
      */
     private String searchQueryNormalized;
@@ -89,4 +94,14 @@ public class SearchHistory implements Serializable {
      * 搜索时间
      */
     private LocalDateTime searchedAt;
+
+    /**
+     * 搜索时间(别名)
+     */
+    private LocalDateTime searchTime;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdAt;
 }

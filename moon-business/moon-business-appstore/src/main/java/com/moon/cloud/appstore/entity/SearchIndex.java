@@ -42,9 +42,19 @@ public class SearchIndex implements Serializable {
     private String appstoreAppId;
 
     /**
+     * App Store ID (别名)
+     */
+    private String appstoreId;
+
+    /**
      * 应用名称
      */
     private String appName;
+
+    /**
+     * 应用名称(别名)
+     */
+    private String name;
 
     /**
      * 应用名称拼音
@@ -72,9 +82,19 @@ public class SearchIndex implements Serializable {
     private String categoryNames;
 
     /**
+     * 分类名称(别名)
+     */
+    private String categoryName;
+
+    /**
      * 描述摘要
      */
     private String descriptionSnippet;
+
+    /**
+     * 描述(完整)
+     */
+    private String description;
 
     /**
      * 搜索权重
@@ -100,6 +120,46 @@ public class SearchIndex implements Serializable {
      * 点击率
      */
     private BigDecimal clickRate;
+
+    /**
+     * Bundle ID
+     */
+    private String bundleId;
+
+    /**
+     * 图标URL
+     */
+    private String iconUrl;
+
+    /**
+     * 评分
+     */
+    private BigDecimal rating;
+
+    /**
+     * 下载量
+     */
+    private Integer downloads;
+
+    /**
+     * 当前价格
+     */
+    private BigDecimal currentPrice;
+
+    /**
+     * 原始价格
+     */
+    private BigDecimal originalPrice;
+
+    /**
+     * 是否免费
+     */
+    private Boolean isFree;
+
+    /**
+     * 是否有内购
+     */
+    private Boolean hasInAppPurchase;
 
     /**
      * 创建时间

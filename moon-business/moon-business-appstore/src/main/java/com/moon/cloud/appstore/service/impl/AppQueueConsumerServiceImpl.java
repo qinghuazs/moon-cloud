@@ -8,7 +8,9 @@ import com.moon.cloud.appstore.entity.App;
 import com.moon.cloud.appstore.entity.AppCrawlFailure;
 import com.moon.cloud.appstore.entity.AppPriceHistory;
 import com.moon.cloud.appstore.entity.Category;
+import com.moon.cloud.appstore.entity.FreePromotion;
 import com.moon.cloud.appstore.mapper.AppCrawlFailureMapper;
+import com.moon.cloud.appstore.mapper.FreePromotionMapper;
 import com.moon.cloud.appstore.mapper.AppMapper;
 import com.moon.cloud.appstore.mapper.AppPriceHistoryMapper;
 import com.moon.cloud.appstore.mapper.CategoryMapper;
@@ -25,6 +27,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -56,6 +59,7 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
     private final AppCrawlFailureMapper appCrawlFailureMapper;
     private final CategoryMapper categoryMapper;
     private final AppPriceHistoryMapper appPriceHistoryMapper;
+    private final FreePromotionMapper freePromotionMapper;
 
     // Redis队列key前缀（与CrawlerService保持一致）
     private static final String APP_QUEUE_PREFIX = "appstore:queue:";
@@ -505,6 +509,27 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
         app.setCurrency(json.getString("currency"));
         app.setIsFree(json.getBoolean("free"));
 
+        // 处理原始价格
+        if (existingApp != null) {
+            // 如果数据库中的原始价格为空，则将当前价格设置为原始价格
+            if (existingApp.getOriginalPrice() == null && json.getBigDecimal("price") != null) {
+                app.setOriginalPrice(json.getBigDecimal("price"));
+                log.info("为已存在的App设置原始价格: appId={}, price={}", app.getAppId(), json.getBigDecimal("price"));
+            } else {
+                // 保持原有的原始价格
+                app.setOriginalPrice(existingApp.getOriginalPrice());
+
+                // 检测优惠并记录
+                checkAndRecordDiscount(app, existingApp, json);
+            }
+        } else {
+            // 新App，将当前价格设置为原始价格
+            if (json.getBigDecimal("price") != null) {
+                app.setOriginalPrice(json.getBigDecimal("price"));
+                log.info("为新App设置原始价格: appId={}, price={}", app.getAppId(), json.getBigDecimal("price"));
+            }
+        }
+
         // 内容分级
         app.setContentRating(json.getString("contentRating"));
 
@@ -663,6 +688,75 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
 
         } catch (Exception e) {
             log.error("记录失败信息异常", e);
+        }
+    }
+
+    /**
+     * 检测并记录优惠信息
+     */
+    private void checkAndRecordDiscount(App app, App existingApp, JSONObject json) {
+        try {
+            BigDecimal originalPrice = existingApp.getOriginalPrice();
+            BigDecimal currentPrice = json.getBigDecimal("price");
+
+            // 如果原始价格和当前价格都存在，且当前价格小于原始价格
+            if (originalPrice != null && currentPrice != null &&
+                currentPrice.compareTo(originalPrice) < 0) {
+
+                // 检查今天是否已经记录过该App的优惠
+                LocalDate today = LocalDate.now();
+                LambdaQueryWrapper<FreePromotion> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(FreePromotion::getAppstoreAppId, app.getAppId())
+                           .ge(FreePromotion::getCreatedAt, today.atStartOfDay())
+                           .le(FreePromotion::getCreatedAt, today.atTime(23, 59, 59))
+                           .eq(FreePromotion::getStatus, "ACTIVE");
+
+                FreePromotion existingPromotion = freePromotionMapper.selectOne(queryWrapper);
+
+                if (existingPromotion == null) {
+                    // 创建新的优惠记录
+                    FreePromotion promotion = new FreePromotion();
+                    promotion.setAppId(app.getId());
+                    promotion.setAppstoreAppId(app.getAppId());
+
+                    // 判断优惠类型
+                    if (currentPrice.compareTo(BigDecimal.ZERO) == 0) {
+                        promotion.setPromotionType("FREE");
+                    } else {
+                        promotion.setPromotionType("DISCOUNT");
+                    }
+
+                    promotion.setOriginalPrice(originalPrice);
+                    promotion.setPromotionPrice(currentPrice);
+
+                    // 计算优惠金额和折扣率
+                    BigDecimal savingsAmount = originalPrice.subtract(currentPrice);
+                    promotion.setSavingsAmount(savingsAmount);
+
+                    if (originalPrice.compareTo(BigDecimal.ZERO) > 0) {
+                        BigDecimal discountRate = savingsAmount.divide(originalPrice, 4, BigDecimal.ROUND_HALF_UP)
+                                                                .multiply(new BigDecimal("100"));
+                        promotion.setDiscountRate(discountRate);
+                    }
+
+                    promotion.setStartTime(LocalDateTime.now());
+                    promotion.setDiscoveredAt(LocalDateTime.now());
+                    promotion.setDiscoverySource("AUTO");
+                    promotion.setStatus("ACTIVE");
+                    promotion.setViewCount(0);
+                    promotion.setClickCount(0);
+                    promotion.setShareCount(0);
+                    promotion.setCreatedAt(LocalDateTime.now());
+                    promotion.setUpdatedAt(LocalDateTime.now());
+
+                    freePromotionMapper.insert(promotion);
+
+                    log.info("记录App优惠信息: appId={}, originalPrice={}, currentPrice={}, type={}",
+                            app.getAppId(), originalPrice, currentPrice, promotion.getPromotionType());
+                }
+            }
+        } catch (Exception e) {
+            log.error("记录优惠信息失败: appId={}", app.getAppId(), e);
         }
     }
 }
