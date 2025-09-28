@@ -57,8 +57,8 @@
             a.has_ads,
             a.supported_devices
         FROM
-            free_promotion fp
-            INNER JOIN app a ON fp.app_id = a.id
+            free_promotions fp
+            INNER JOIN apps a ON fp.app_id = a.id
         <where>
             <if test="status != null">
                 AND fp.status = #{status}
@@ -110,8 +110,8 @@
         SELECT
             COUNT(*)
         FROM
-            free_promotion fp
-            INNER JOIN app a ON fp.app_id = a.id
+            free_promotions fp
+            INNER JOIN apps a ON fp.app_id = a.id
         <where>
             <if test="status != null">
                 AND fp.status = #{status}
