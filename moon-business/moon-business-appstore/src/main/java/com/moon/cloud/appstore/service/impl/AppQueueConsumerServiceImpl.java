@@ -86,16 +86,27 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
 
     @Override
     public void consumeAllCategoryQueues() {
-        log.info("开始消费所有分类的App URL队列");
+        log.info("开始消费所有分类的App URL队列，包括default队列");
 
         // 获取所有分类
         List<Category> categories = categoryMapper.selectList(null);
         if (categories == null || categories.isEmpty()) {
-            log.warn("没有找到任何分类，跳过消费");
+            log.warn("没有找到任何分类，跳过分类队列消费");
+            categories = new ArrayList<>();
+        }
+
+        // 检查default队列
+        String defaultQueueName = APP_QUEUE_PREFIX + "default";
+        Long defaultQueueSize = redisTemplate.opsForList().size(defaultQueueName);
+        boolean hasDefaultQueue = defaultQueueSize != null && defaultQueueSize > 0;
+
+        int totalQueues = categories.size() + (hasDefaultQueue ? 1 : 0);
+        if (totalQueues == 0) {
+            log.info("没有任何队列需要处理");
             return;
         }
 
-        log.info("发现 {} 个分类需要处理", categories.size());
+        log.info("发现 {} 个分类队列和 {} 个default队列需要处理", categories.size(), hasDefaultQueue ? 1 : 0);
 
         // 记录各分类处理统计
         AtomicInteger processedCategories = new AtomicInteger(0);
@@ -117,15 +128,31 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
             futures.add(future);
         }
 
-        // 等待所有分类队列消费完成
-        // 每个分类预留10分钟，最少1小时
-        long totalTimeout = Math.max(3600, categories.size() * 600L);
+        // 如果有default队列，也添加到处理列表
+        if (hasDefaultQueue) {
+            CompletableFuture<Void> defaultFuture = CompletableFuture.runAsync(() -> {
+                try {
+                    log.info("开始消费default队列，队列大小：{}", defaultQueueSize);
+                    consumeAppQueue(defaultQueueName);
+                    processedCategories.incrementAndGet();
+                    log.info("default队列处理完成");
+                } catch (Exception e) {
+                    failedCategories.incrementAndGet();
+                    log.error("default队列处理失败", e);
+                }
+            }, executorService);
+            futures.add(defaultFuture);
+        }
+
+        // 等待所有队列消费完成
+        // 每个队列预留10分钟，最少1小时
+        long totalTimeout = Math.max(3600, totalQueues * 600L);
 
         try {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                     .get(totalTimeout, TimeUnit.SECONDS);
-            log.info("所有分类队列处理完成 - 成功: {}, 失败: {}, 总计: {}",
-                processedCategories.get(), failedCategories.get(), categories.size());
+            log.info("所有队列处理完成 - 成功: {}, 失败: {}, 总计: {}",
+                processedCategories.get(), failedCategories.get(), totalQueues);
         } catch (TimeoutException e) {
             log.error("处理所有分类队列超时（{}秒），部分分类可能未完成", totalTimeout);
             // 取消未完成的任务
@@ -135,7 +162,7 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
                 }
             });
             log.info("超时后统计 - 已处理: {}, 失败: {}, 总计: {}",
-                processedCategories.get(), failedCategories.get(), categories.size());
+                processedCategories.get(), failedCategories.get(), totalQueues);
         } catch (Exception e) {
             log.error("消费所有分类队列时发生异常", e);
         }
@@ -317,18 +344,27 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
     public Long getAllQueuesSize() {
         // 获取所有分类队列的总大小
         List<Category> categories = categoryMapper.selectList(null);
-        if (categories == null || categories.isEmpty()) {
-            return 0L;
-        }
 
         long totalSize = 0;
-        for (Category category : categories) {
-            String queueName = APP_QUEUE_PREFIX + category.getCategoryId();
-            Long size = redisTemplate.opsForList().size(queueName);
-            if (size != null) {
-                totalSize += size;
+
+        // 统计分类队列大小
+        if (categories != null && !categories.isEmpty()) {
+            for (Category category : categories) {
+                String queueName = APP_QUEUE_PREFIX + category.getCategoryId();
+                Long size = redisTemplate.opsForList().size(queueName);
+                if (size != null) {
+                    totalSize += size;
+                }
             }
         }
+
+        // 统计default队列大小
+        String defaultQueueName = APP_QUEUE_PREFIX + "default";
+        Long defaultSize = redisTemplate.opsForList().size(defaultQueueName);
+        if (defaultSize != null) {
+            totalSize += defaultSize;
+        }
+
         return totalSize;
     }
 
@@ -466,14 +502,6 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
         app.setDeveloperName(json.getString("developer"));
         app.setDeveloperId(json.getString("developerId"));
         app.setDeveloperUrl(json.getString("developerUrl"));
-
-        // App Store URL（如果JSON中包含）
-        String appUrl = json.getString("url");
-        if (!StringUtils.hasText(appUrl)) {
-            // 如果没有URL字段，生成默认的URL
-            appUrl = String.format("https://apps.apple.com/cn/app/id%s", json.getString("id"));
-        }
-        app.setAppUrl(appUrl);
 
         // 分类信息
         app.setPrimaryCategoryId(json.getString("primaryGenreId"));

@@ -262,6 +262,14 @@ public class SearchServiceImpl implements SearchService {
         vo.setOriginalPrice(app.getOriginalPrice());
         vo.setCurrentPrice(app.getCurrentPrice());
 
+        // 设置App Store URL
+        if (app.getAppUrl() != null) {
+            vo.setAppUrl(app.getAppUrl());
+        } else {
+            // 如果没有保存URL，生成默认的
+            vo.setAppUrl(String.format("https://apps.apple.com/cn/app/id%s", app.getAppId()));
+        }
+
         // 格式化文件大小
         if (app.getFileSize() != null) {
             vo.setFileSizeFormatted(formatFileSize(app.getFileSize()));

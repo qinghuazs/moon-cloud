@@ -42,8 +42,6 @@ public class FreeAppServiceImpl implements FreeAppService {
 
     @Override
     public Page<FreeAppVO> getTodayFreeApps(FreeAppListDTO dto) {
-        Page<FreePromotion> page = new Page<>(dto.getPage(), dto.getPageSize());
-
         // 构建查询条件
         LambdaQueryWrapper<FreePromotion> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FreePromotion::getStatus, "ACTIVE");
@@ -59,6 +57,9 @@ public class FreeAppServiceImpl implements FreeAppService {
             wrapper.le(FreePromotion::getEndTime, endingSoon);
         }
 
+        // 先查询总记录数
+        Long total = freePromotionMapper.selectCount(wrapper);
+
         // 排序方式
         if ("savings".equals(dto.getSortBy())) {
             wrapper.orderByDesc(FreePromotion::getSavingsAmount);
@@ -69,12 +70,23 @@ public class FreeAppServiceImpl implements FreeAppService {
             wrapper.orderByDesc(FreePromotion::getDiscoveredAt);
         }
 
-        // 执行查询
-        Page<FreePromotion> promotionPage = freePromotionMapper.selectPage(page, wrapper);
+        // 手动设置分页
+        int page = dto.getPage() > 0 ? dto.getPage() : 1;
+        int pageSize = dto.getPageSize() > 0 ? dto.getPageSize() : 20;
+        int offset = (page - 1) * pageSize;
+        wrapper.last("LIMIT " + offset + ", " + pageSize);
 
-        // 转换为VO
-        Page<FreeAppVO> voPage = new Page<>(promotionPage.getCurrent(), promotionPage.getSize(), promotionPage.getTotal());
-        List<FreeAppVO> voList = promotionPage.getRecords().stream()
+        // 执行查询
+        List<FreePromotion> promotions = freePromotionMapper.selectList(wrapper);
+
+        // 构建分页结果
+        Page<FreeAppVO> voPage = new Page<>();
+        voPage.setCurrent(page);           // 当前页码
+        voPage.setSize(pageSize);          // 每页大小
+        voPage.setTotal(total);            // 总记录数
+
+        // 转换记录
+        List<FreeAppVO> voList = promotions.stream()
             .map(this::convertToFreeAppVO)
             .collect(Collectors.toList());
         voPage.setRecords(voList);
@@ -180,10 +192,21 @@ public class FreeAppServiceImpl implements FreeAppService {
             vo.setHasInAppPurchase(app.getHasInAppPurchase());
             vo.setHasAds(app.getHasAds());
 
+            // 设置App Store URL
+            if (app.getAppUrl() != null) {
+                vo.setAppUrl(app.getAppUrl());
+            } else {
+                // 如果没有保存URL，生成默认的
+                vo.setAppUrl(String.format("https://apps.apple.com/cn/app/id%s", promotion.getAppstoreAppId()));
+            }
+
             // 格式化文件大小
             if (app.getFileSize() != null) {
                 vo.setFileSizeFormatted(formatFileSize(app.getFileSize()));
             }
+        } else {
+            // 如果没有找到app记录，生成默认URL
+            vo.setAppUrl(String.format("https://apps.apple.com/cn/app/id%s", promotion.getAppstoreAppId()));
         }
 
         vo.setOriginalPrice(promotion.getOriginalPrice());

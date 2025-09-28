@@ -23,6 +23,9 @@ public class FreeAppVO {
     @Schema(description = "App Store应用ID")
     private String appstoreId;
 
+    @Schema(description = "App Store链接URL")
+    private String appUrl;
+
     @Schema(description = "应用名称")
     private String name;
 

@@ -26,10 +26,11 @@ public class AppQueueController {
     private final AppQueueConsumerService appQueueConsumerService;
 
     @GetMapping("/status")
-    @Operation(summary = "获取队列状态", description = "获取所有分类队列和失败队列的大小")
+    @Operation(summary = "获取队列状态", description = "获取所有分类队列、default队列和失败队列的大小")
     public Map<String, Object> getQueueStatus() {
         Map<String, Object> status = new HashMap<>();
         status.put("totalQueueSize", appQueueConsumerService.getAllQueuesSize());
+        status.put("defaultQueueSize", appQueueConsumerService.getCategoryQueueSize("default"));
         status.put("failedQueueSize", appQueueConsumerService.getFailedQueueSize());
         status.put("timestamp", System.currentTimeMillis());
         return status;
@@ -46,7 +47,7 @@ public class AppQueueController {
     }
 
     @PostMapping("/consume")
-    @Operation(summary = "手动触发消费", description = "手动触发一次所有分类队列消费任务")
+    @Operation(summary = "手动触发消费", description = "手动触发一次所有分类队列和default队列消费任务")
     public Map<String, Object> triggerConsume() {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -54,7 +55,7 @@ public class AppQueueController {
             if (totalQueueSize > 0) {
                 appQueueConsumerService.consumeAllCategoryQueues();
                 result.put("success", true);
-                result.put("message", "消费任务已触发");
+                result.put("message", "消费任务已触发（包含default队列）");
                 result.put("totalQueueSize", totalQueueSize);
             } else {
                 result.put("success", false);
@@ -87,6 +88,30 @@ public class AppQueueController {
             }
         } catch (Exception e) {
             log.error("手动触发分类消费失败: {}", categoryId, e);
+            result.put("success", false);
+            result.put("message", "触发失败: " + e.getMessage());
+        }
+        return result;
+    }
+
+    @PostMapping("/consume/default")
+    @Operation(summary = "手动触发default队列消费", description = "手动触发default队列的消费任务")
+    public Map<String, Object> triggerDefaultConsume() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Long queueSize = appQueueConsumerService.getCategoryQueueSize("default");
+            if (queueSize > 0) {
+                appQueueConsumerService.consumeCategoryQueue("default");
+                result.put("success", true);
+                result.put("message", "default队列的消费任务已触发");
+                result.put("queueSize", queueSize);
+            } else {
+                result.put("success", false);
+                result.put("message", "default队列为空");
+                result.put("queueSize", 0);
+            }
+        } catch (Exception e) {
+            log.error("手动触发default队列消费失败", e);
             result.put("success", false);
             result.put("message", "触发失败: " + e.getMessage());
         }

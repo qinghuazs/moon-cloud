@@ -1,6 +1,5 @@
 package com.moon.cloud.appstore.config;
 
-import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -74,13 +73,6 @@ public class DatabaseConfig {
         return new HikariDataSource(config);
     }
 
-    @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor() {
-        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        // 分页插件暂时禁用，等依赖问题解决后再启用
-        // interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
-        return interceptor;
-    }
 
     private String getEnvValue(String key, String defaultValue) {
         // 优先从系统环境变量获取
