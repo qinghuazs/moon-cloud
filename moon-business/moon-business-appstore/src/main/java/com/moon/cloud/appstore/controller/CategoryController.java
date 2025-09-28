@@ -26,14 +26,14 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/appstore/categories")
+@RequestMapping("/categories")
 @Tag(name = "分类管理", description = "应用分类相关接口")
 public class CategoryController {
 
     private final CategoryService categoryService;
 
     @Operation(summary = "获取所有分类（树形结构）")
-    @GetMapping
+    @GetMapping("/list")
     public List<CategoryVO> getAllCategories() {
         log.info("获取所有分类");
         return categoryService.getAllCategories();

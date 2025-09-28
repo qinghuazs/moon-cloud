@@ -25,7 +25,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/appstore/free")
+@RequestMapping("/free")
 @RequiredArgsConstructor
 @Tag(name = "限免应用管理", description = "限免应用相关接口")
 public class FreePromotionController {

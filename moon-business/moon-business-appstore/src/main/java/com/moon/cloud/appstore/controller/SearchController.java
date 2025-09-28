@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/appstore/search")
+@RequestMapping("/search")
 @Tag(name = "搜索管理", description = "应用搜索相关接口")
 public class SearchController {
 

@@ -70,7 +70,7 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
     @Value("${appstore.express.url:http://localhost:3090}")
     private String expressServerUrl;
 
-    @Value("${appstore.consumer.batch-size:10}")
+    @Value("${appstore.consumer.batch-size:300}")
     private Integer batchSize;
 
     @Value("${appstore.consumer.thread-pool-size:5}")

@@ -381,7 +381,11 @@ Moon Business AppStore 是一个 APP Store 限免应用推荐后端服务，提�
 
 ### 3. 搜索管理
 
-#### 3.1 搜索应用
+注意：搜索功能分为两组接口：
+- 基础搜索接口：`/api/appstore/search/*` - 提供基础搜索功能
+- 高级搜索接口：`/api/appstore/app/search/*` - 提供高级搜索和索引管理功能
+
+#### 3.1 基础搜索应用
 
 **接口地址**: `GET /api/appstore/search`
 

@@ -23,7 +23,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/appstore/search")
+@RequestMapping("/app/search")
 @RequiredArgsConstructor
 @Tag(name = "应用搜索", description = "应用搜索相关接口")
 public class AppSearchController {

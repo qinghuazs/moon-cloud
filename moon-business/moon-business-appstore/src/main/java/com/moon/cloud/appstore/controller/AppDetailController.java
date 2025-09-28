@@ -23,7 +23,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/appstore/app")
+@RequestMapping("/app")
 @RequiredArgsConstructor
 @Tag(name = "应用详情管理", description = "应用详情相关接口")
 public class AppDetailController {
