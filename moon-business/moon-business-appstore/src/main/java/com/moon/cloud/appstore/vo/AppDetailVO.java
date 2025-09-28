@@ -26,6 +26,9 @@ public class AppDetailVO {
     @Schema(description = "应用Bundle ID")
     private String bundleId;
 
+    @Schema(description = "App Store链接URL")
+    private String appUrl;
+
     @Schema(description = "应用名称")
     private String name;
 

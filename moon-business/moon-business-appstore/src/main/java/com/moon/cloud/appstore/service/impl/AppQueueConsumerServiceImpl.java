@@ -276,6 +276,11 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
             // 4. 转换数据并保存
             App app = convertToApp(appDetail, existingApp);
 
+            // 如果 JSON 中没有 URL 或者 URL 为空，使用队列中的 URL
+            if (!StringUtils.hasText(app.getAppUrl())) {
+                app.setAppUrl(appUrl);
+            }
+
             // 检测并记录价格变化
             checkAndRecordPriceChange(app, existingApp, appDetail);
 
@@ -461,6 +466,14 @@ public class AppQueueConsumerServiceImpl implements AppQueueConsumerService {
         app.setDeveloperName(json.getString("developer"));
         app.setDeveloperId(json.getString("developerId"));
         app.setDeveloperUrl(json.getString("developerUrl"));
+
+        // App Store URL（如果JSON中包含）
+        String appUrl = json.getString("url");
+        if (!StringUtils.hasText(appUrl)) {
+            // 如果没有URL字段，生成默认的URL
+            appUrl = String.format("https://apps.apple.com/cn/app/id%s", json.getString("id"));
+        }
+        app.setAppUrl(appUrl);
 
         // 分类信息
         app.setPrimaryCategoryId(json.getString("primaryGenreId"));

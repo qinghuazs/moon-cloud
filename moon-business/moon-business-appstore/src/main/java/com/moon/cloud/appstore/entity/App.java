@@ -40,6 +40,11 @@ public class App implements Serializable {
     private String appId;
 
     /**
+     * App Store链接URL
+     */
+    private String appUrl;
+
+    /**
      * 应用Bundle ID
      */
     private String bundleId;

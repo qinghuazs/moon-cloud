@@ -267,6 +267,10 @@ public class AppDetailServiceImpl implements AppDetailService {
     public String getAppStoreUrl(String appId) {
         App app = getAppByIdOrAppStoreId(appId);
         if (app != null) {
+            // 优先使用 appUrl 字段，如果没有则生成默认URL
+            if (app.getAppUrl() != null && !app.getAppUrl().isEmpty()) {
+                return app.getAppUrl();
+            }
             return String.format("https://apps.apple.com/cn/app/id%s", app.getAppId());
         }
         return null;
@@ -319,6 +323,7 @@ public class AppDetailServiceImpl implements AppDetailService {
         vo.setAppId(app.getId());
         vo.setAppstoreId(app.getAppId());
         vo.setBundleId(app.getBundleId());
+        vo.setAppUrl(app.getAppUrl());
         vo.setName(app.getName());
         vo.setDescription(app.getDescription());
         vo.setDeveloperName(app.getDeveloperName());
