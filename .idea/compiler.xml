@@ -11,18 +11,9 @@
         <module name="moon-business-web-drift-bottle" />
         <module name="moon-business-gateway" />
         <module name="moon-business-eureka-client" />
+        <module name="moon-spring-boot-starter-response" />
         <module name="moon-spring-boot-starter-validator" />
         <module name="moon-concurrent" />
-      </profile>
-      <profile name="Annotation profile for moon-spring-boot-starter-response" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
-          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/${lombok.version}/lombok-${lombok.version}.jar" />
-        </processorPath>
-        <module name="moon-spring-boot-starter-response" />
       </profile>
       <profile name="Annotation profile for moon-spring-boot-starter-threadpool" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -54,7 +45,6 @@
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
-        <module name="moon-business-user" />
         <module name="moon-business-shorturl" />
       </profile>
       <profile name="Annotation profile for moon-business-appstore" enabled="true">
@@ -74,6 +64,15 @@
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="moon-business-gps" />
+      </profile>
+      <profile name="Annotation profile for moon-business-user" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="moon-business-user" />
       </profile>
     </annotationProcessing>
   </component>
