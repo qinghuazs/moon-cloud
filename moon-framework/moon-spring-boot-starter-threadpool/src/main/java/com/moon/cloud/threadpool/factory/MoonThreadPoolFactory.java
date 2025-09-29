@@ -1,157 +1,253 @@
 package com.moon.cloud.threadpool.factory;
 
-import com.moon.cloud.threadpool.registry.ThreadPoolRegistry;
+import com.moon.cloud.threadpool.config.ThreadPoolProperties;
 import com.moon.cloud.threadpool.rejector.RetryRejectedExecutionHandler;
+import com.moon.cloud.threadpool.rejector.RetryRejectedExecutionConfig;
+import com.moon.cloud.threadpool.registry.ThreadPoolRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 自定义线程池工厂类，支持创建IO密集型和CPU密集型线程池
+ * Moon 线程池工厂
+ * 提供创建不同类型线程池的工厂方法
+ *
+ * @author moon
+ * @since 1.0.0
  */
 @Slf4j
+@Component
 public class MoonThreadPoolFactory {
 
-    /**
-     * 创建IO密集型线程池（使用重试拒绝策略）
-     * IO密集型任务特点：大量的网络请求、文件读写等，线程经常处于阻塞状态
-     * 线程数配置：通常设置为 2 * CPU核心数，因为IO操作会阻塞线程
-     * 
-     * @param threadNamePrefix 线程名称前缀
-     * @param retryHandler 重试拒绝策略处理器
-     * @return ExecutorService
-     */
-    public static ExecutorService createIOIntensiveThreadPoolWithRetry(String threadNamePrefix, 
-                                                                       RetryRejectedExecutionHandler retryHandler) {
-        int corePoolSize = Runtime.getRuntime().availableProcessors() * 2;
-        int maximumPoolSize = corePoolSize * 2;
-        long keepAliveTime = 60L;
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                corePoolSize,
-                maximumPoolSize,
-                keepAliveTime,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(1000),
-                createThreadFactory(threadNamePrefix + "-io-"),
-                retryHandler != null ? retryHandler : new ThreadPoolExecutor.CallerRunsPolicy()
-        );
-        ThreadPoolRegistry.register(threadNamePrefix, executor);
-        return executor;
+    private final RetryRejectedExecutionConfig retryConfig;
+    private ThreadPoolProperties properties;
+
+    public MoonThreadPoolFactory(RetryRejectedExecutionConfig retryConfig) {
+        this.retryConfig = retryConfig;
+        // 创建默认配置
+        this.properties = new ThreadPoolProperties();
+    }
+
+    @Autowired(required = false)
+    public void setProperties(ThreadPoolProperties properties) {
+        if (properties != null) {
+            this.properties = properties;
+        }
     }
 
     /**
-     * 创建CPU密集型线程池（使用重试拒绝策略）
-     * CPU密集型任务特点：大量的计算操作，线程持续占用CPU资源
-     * 线程数配置：通常设置为 CPU核心数 + 1，避免过多线程导致上下文切换开销
-     * 
-     * @param threadNamePrefix 线程名称前缀
-     * @param retryHandler 重试拒绝策略处理器
-     * @return ExecutorService
+     * 创建IO密集型线程池
+     * IO密集型任务特点：CPU计算少，等待IO操作多
+     * 线程数设置：2 * CPU核心数
      */
-    public static ExecutorService createCPUIntensiveThreadPoolWithRetry(String threadNamePrefix,
-                                                                        RetryRejectedExecutionHandler retryHandler) {
-        //当某个线程因为页缺失（page fault）或其它短暂阻塞（如系统调用）时，额外的线程可以立即填补这个空档，保持CPU处于忙碌状态。
-        int corePoolSize = Runtime.getRuntime().availableProcessors() + 1;
-        int maximumPoolSize = corePoolSize;
-        long keepAliveTime = 60L;
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                corePoolSize,
-                maximumPoolSize,
-                keepAliveTime,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(500),
-                createThreadFactory(threadNamePrefix + "-cpu-"),
-                retryHandler != null ? retryHandler : new ThreadPoolExecutor.AbortPolicy()
-        );
-        ThreadPoolRegistry.register(threadNamePrefix, executor);
-        return executor;
-    }
+    public ThreadPoolExecutor createIoIntensiveThreadPool(String poolName) {
+        ThreadPoolProperties.PoolConfig config = properties.getIoIntensive();
 
-    /**
-     * 创建自定义线程池（使用重试拒绝策略）
-     * 
-     * @param corePoolSize 核心线程数
-     * @param maximumPoolSize 最大线程数
-     * @param keepAliveTime 线程空闲时间
-     * @param queueCapacity 队列容量
-     * @param threadNamePrefix 线程名称前缀
-     * @param retryHandler 重试拒绝策略处理器
-     * @return ExecutorService
-     */
-    public static ExecutorService createCustomThreadPoolWithRetry(
-            int corePoolSize,
-            int maximumPoolSize,
-            long keepAliveTime,
-            int queueCapacity,
-            String threadNamePrefix,
-            RetryRejectedExecutionHandler retryHandler) {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+        int corePoolSize = config.getCorePoolSize() != null ?
+                config.getCorePoolSize() : Runtime.getRuntime().availableProcessors() * 2;
+        int maximumPoolSize = config.getMaximumPoolSize() != null ?
+                config.getMaximumPoolSize() : corePoolSize * 2;
+        long keepAliveTime = config.getKeepAliveTime();
+        int queueCapacity = config.getQueueCapacity();
+
+        ThreadPoolExecutor executor = createThreadPool(
+                poolName,
                 corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(queueCapacity),
-                createThreadFactory(threadNamePrefix + "-custom-"),
-                retryHandler != null ? retryHandler : new ThreadPoolExecutor.CallerRunsPolicy()
+                createRejectedHandler(config.getRejectedExecutionHandler()),
+                properties.isDaemon(),
+                properties.getThreadPriority()
         );
-        ThreadPoolRegistry.register(threadNamePrefix, executor);
+
+        // 配置额外参数
+        configureThreadPool(executor, config);
+
+        log.info("创建IO密集型线程池 [{}]: 核心线程数={}, 最大线程数={}, 存活时间={}秒, 队列容量={}",
+                poolName, corePoolSize, maximumPoolSize, keepAliveTime, queueCapacity);
+
         return executor;
     }
 
     /**
-     * 创建线程工厂
-     * 
-     * @param namePrefix 线程名称前缀
-     * @return ThreadFactory
+     * 创建CPU密集型线程池
+     * CPU密集型任务特点：大量计算，CPU使用率高
+     * 线程数设置：CPU核心数 + 1
      */
-    private static ThreadFactory createThreadFactory(String namePrefix) {
-        return new ThreadFactory() {
-            private final AtomicInteger threadNumber = new AtomicInteger(1);
-            private final ThreadGroup group = Thread.currentThread().getThreadGroup();
+    public ThreadPoolExecutor createCpuIntensiveThreadPool(String poolName) {
+        ThreadPoolProperties.PoolConfig config = properties.getCpuIntensive();
 
+        int corePoolSize = config.getCorePoolSize() != null ?
+                config.getCorePoolSize() : Runtime.getRuntime().availableProcessors() + 1;
+        int maximumPoolSize = config.getMaximumPoolSize() != null ?
+                config.getMaximumPoolSize() : corePoolSize;
+        long keepAliveTime = config.getKeepAliveTime();
+        int queueCapacity = config.getQueueCapacity();
 
-            @Override
-            public Thread newThread(Runnable r) {
-                String threadName = namePrefix + "-thread-" + threadNumber.getAndIncrement();
-                Thread thread = new Thread(group, r, threadName, 0);
+        ThreadPoolExecutor executor = createThreadPool(
+                poolName,
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(queueCapacity),
+                createRejectedHandler(config.getRejectedExecutionHandler()),
+                properties.isDaemon(),
+                properties.getThreadPriority()
+        );
 
-                // 设置守护线程
-                thread.setDaemon(true);
+        // 配置额外参数
+        configureThreadPool(executor, config);
 
-                // 设置异常处理器
-                thread.setUncaughtExceptionHandler((t, e) -> {
-                    System.err.println("Thread " + t.getName() + " threw exception: " + e.getMessage());
-                    e.printStackTrace();
-                });
+        log.info("创建CPU密集型线程池 [{}]: 核心线程数={}, 最大线程数={}, 存活时间={}秒, 队列容量={}",
+                poolName, corePoolSize, maximumPoolSize, keepAliveTime, queueCapacity);
 
-                return thread;
-            }
-        };
+        return executor;
     }
 
     /**
-     * 优雅关闭线程池
-     * 
-     * @param executor 要关闭的线程池
-     * @param timeoutSeconds 等待超时时间（秒）
+     * 创建自定义线程池
      */
-    public static void shutdownGracefully(ExecutorService executor, long timeoutSeconds) {
-        if (executor == null || executor.isShutdown()) {
-            return;
+    public ThreadPoolExecutor createCustomThreadPool(String poolName,
+                                                     int corePoolSize,
+                                                     int maximumPoolSize,
+                                                     long keepAliveTime,
+                                                     TimeUnit unit,
+                                                     BlockingQueue<Runnable> workQueue,
+                                                     RejectedExecutionHandler handler) {
+        ThreadPoolExecutor executor = createThreadPool(
+                poolName,
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                unit,
+                workQueue,
+                handler != null ? handler : new RetryRejectedExecutionHandler(retryConfig),
+                properties.isDaemon(),
+                properties.getThreadPriority()
+        );
+
+        log.info("创建自定义线程池 [{}]: 核心线程数={}, 最大线程数={}, 存活时间={}{}",
+                poolName, corePoolSize, maximumPoolSize, keepAliveTime, unit);
+
+        return executor;
+    }
+
+    /**
+     * 创建定时任务线程池
+     */
+    public ScheduledThreadPoolExecutor createScheduledThreadPool(String poolName, int corePoolSize) {
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
+                corePoolSize,
+                new MoonThreadFactory(poolName, properties.isDaemon(), properties.getThreadPriority()),
+                new RetryRejectedExecutionHandler(retryConfig)
+        );
+
+        // 注册到线程池注册中心
+        ThreadPoolRegistry.register(poolName, executor);
+
+        log.info("创建定时任务线程池 [{}]: 核心线程数={}", poolName, corePoolSize);
+
+        return executor;
+    }
+
+    /**
+     * 根据配置创建线程池
+     */
+    public ThreadPoolExecutor createThreadPoolFromConfig(String poolName,
+                                                         ThreadPoolProperties.PoolConfig config) {
+        int corePoolSize = config.getCorePoolSize() != null ?
+                config.getCorePoolSize() : Runtime.getRuntime().availableProcessors();
+        int maximumPoolSize = config.getMaximumPoolSize() != null ?
+                config.getMaximumPoolSize() : corePoolSize * 2;
+
+        ThreadPoolExecutor executor = createThreadPool(
+                poolName,
+                corePoolSize,
+                maximumPoolSize,
+                config.getKeepAliveTime(),
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(config.getQueueCapacity()),
+                createRejectedHandler(config.getRejectedExecutionHandler()),
+                properties.isDaemon(),
+                properties.getThreadPriority()
+        );
+
+        // 配置额外参数
+        configureThreadPool(executor, config);
+
+        log.info("根据配置创建线程池 [{}]: 核心线程数={}, 最大线程数={}, 存活时间={}秒, 队列容量={}",
+                poolName, corePoolSize, maximumPoolSize, config.getKeepAliveTime(), config.getQueueCapacity());
+
+        return executor;
+    }
+
+    /**
+     * 创建线程池核心方法
+     */
+    private ThreadPoolExecutor createThreadPool(String poolName,
+                                               int corePoolSize,
+                                               int maximumPoolSize,
+                                               long keepAliveTime,
+                                               TimeUnit unit,
+                                               BlockingQueue<Runnable> workQueue,
+                                               RejectedExecutionHandler handler,
+                                               boolean daemon,
+                                               int priority) {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                unit,
+                workQueue,
+                new MoonThreadFactory(poolName, daemon, priority),
+                handler
+        );
+
+        // 注册到线程池注册中心
+        ThreadPoolRegistry.register(poolName, executor);
+
+        // 预启动所有核心线程
+        if (properties.isPrestartAllCoreThreads()) {
+            int prestartedThreads = executor.prestartAllCoreThreads();
+            log.info("线程池 [{}] 预启动了 {} 个核心线程", poolName, prestartedThreads);
         }
-        
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(timeoutSeconds, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-                if (!executor.awaitTermination(timeoutSeconds, TimeUnit.SECONDS)) {
-                    System.err.println("线程池未能正常关闭");
-                }
-            }
-        } catch (InterruptedException e) {
-            executor.shutdownNow();
-            Thread.currentThread().interrupt();
+
+        return executor;
+    }
+
+    /**
+     * 配置线程池额外参数
+     */
+    private void configureThreadPool(ThreadPoolExecutor executor, ThreadPoolProperties.PoolConfig config) {
+        // 设置核心线程是否允许超时
+        executor.allowCoreThreadTimeOut(config.isAllowCoreThreadTimeOut());
+    }
+
+    /**
+     * 创建拒绝处理器
+     */
+    private RejectedExecutionHandler createRejectedHandler(ThreadPoolProperties.RejectedExecutionHandlerType type) {
+        if (type == null) {
+            return new RetryRejectedExecutionHandler(retryConfig);
+        }
+
+        switch (type) {
+            case CALLER_RUNS:
+                return new ThreadPoolExecutor.CallerRunsPolicy();
+            case ABORT:
+                return new ThreadPoolExecutor.AbortPolicy();
+            case DISCARD:
+                return new ThreadPoolExecutor.DiscardPolicy();
+            case DISCARD_OLDEST:
+                return new ThreadPoolExecutor.DiscardOldestPolicy();
+            case RETRY:
+            default:
+                return new RetryRejectedExecutionHandler(retryConfig);
         }
     }
 }

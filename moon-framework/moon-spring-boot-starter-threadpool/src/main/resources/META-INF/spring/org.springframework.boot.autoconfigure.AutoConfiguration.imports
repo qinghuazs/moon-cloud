@@ -1,2 +1,3 @@
 # Moon Thread Pool Auto Configuration
+com.moon.cloud.threadpool.config.MoonThreadPoolAutoConfiguration
 com.moon.cloud.threadpool.config.ThreadPoolActuatorConfiguration
