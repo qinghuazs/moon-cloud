@@ -55,7 +55,6 @@
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="moon-business-user" />
-        <module name="moon-business-gps" />
         <module name="moon-business-shorturl" />
       </profile>
       <profile name="Annotation profile for moon-business-appstore" enabled="true">
@@ -66,6 +65,15 @@
           <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="moon-business-appstore" />
+      </profile>
+      <profile name="Annotation profile for moon-business-gps" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../yonyou/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="moon-business-gps" />
       </profile>
     </annotationProcessing>
   </component>
